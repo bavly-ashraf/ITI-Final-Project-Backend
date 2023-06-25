@@ -68,7 +68,8 @@ const getUsersById = async (req, res, next) => {
 const signUp = async (req, res, next) => {
   console.log("signUp");
   try {
-    const { email, username, role, password, confirmPassword } = req.body;
+    console.log(req.body);
+    const { email, username, password, confirmPassword } = req.body;
     console.log(
       "Received user data:",
       email,
@@ -92,7 +93,6 @@ const signUp = async (req, res, next) => {
     const newUser = new User({
       email,
       username,
-      role,
       password: hashed_password,
     });
     await newUser.save();
