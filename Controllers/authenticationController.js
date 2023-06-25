@@ -2,9 +2,12 @@ require("dotenv").config();
 const AppError = require("../Helpers/AppError");
 const User = require("../Models/Users");
 const bcrypt = require("bcrypt");
-const {schema,verifySignUp,passwordSchema} = require("../Helpers/validationSchema");
+const {
+  schema,
+  verifySignUp,
+  passwordSchema,
+} = require("../Helpers/validationSchema");
 const jwt = require("jsonwebtoken");
-
 
 ////////////////////////////////////get methods//////////////////////////////////
 
@@ -36,31 +39,75 @@ const getUsersById = async (req, res, next) => {
 
 //http://localhost:8080/users/signup
 
+// const signUp = async (req, res, next) => {
+//   try {
+//     const { email, username, role, password, password_confirm } = req.body;
+//     if (!email || !username || !role || !password || !password_confirm)
+//       return next(new AppError("Please enter the required info"));
+//     const user = await User.findOne({ email });
+//     if (user) {
+//       return next(new AppError("user email already exists"));
+//     } else {
+//       const hashed_password = await bcrypt.hash(password, 10);
+//       const newUser = new User({
+//         email,
+//         username,
+//         role,
+//         password: hashed_password,
+//       });
+//       await newUser.save();
+//       const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
+
+//       newUser.password = undefined;
+//       res.send({ newUser, token });
+//     }
+//   } catch (error) {
+//     return next(error);
+//   }
+// };
 const signUp = async (req, res, next) => {
+  console.log("signUp");
   try {
-    const { email, username, role, password, password_confirm } = req.body;
-    if (!email || !username || !role || !password || !password_confirm)
+    const { email, username, role, password, confirmPassword } = req.body;
+    console.log(
+      "Received user data:",
+      email,
+      username,
+      password,
+      confirmPassword
+    );
+
+    if (!email || !username || !password || !confirmPassword) {
+      console.log("Missing required info");
       return next(new AppError("Please enter the required info"));
+    }
+
     const user = await User.findOne({ email });
     if (user) {
-      return next(new AppError("user email already exists"));
-    } else {
-      const hashed_password = await bcrypt.hash(password, 10);
-      const newUser = new User({
-        email,
-        username,
-        role,
-        password: hashed_password,
-      });
-      await newUser.save();
-      const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
-
-      newUser.password = undefined;
-      res.send({ newUser, token });
+      console.log("User email already exists");
+      return next(new AppError("User email already exists"));
     }
+
+    const hashed_password = await bcrypt.hash(password, 10);
+    const newUser = new User({
+      email,
+      username,
+      role,
+      password: hashed_password,
+    });
+    await newUser.save();
+
+    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
+
+    newUser.password = undefined;
+    res.send({ newUser, token });
+
+    console.log("User signed up successfully");
   } catch (error) {
-    return next(error);
+    console.log("Error occurred during signup:", error);
+    next(error);
   }
+  console.log("End of signUp");
 };
 
 //http://localhost:8080/users/login
@@ -85,7 +132,6 @@ const login = async (req, res, next) => {
     return next(error);
   }
 };
-
 
 ////////////////////////////////////patch methods//////////////////////////////////
 
@@ -140,4 +186,11 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
-module.exports = {getUsers,getUsersById,signUp,login,updatePassword,deleteUser};
+module.exports = {
+  getUsers,
+  getUsersById,
+  signUp,
+  login,
+  updatePassword,
+  deleteUser,
+};
