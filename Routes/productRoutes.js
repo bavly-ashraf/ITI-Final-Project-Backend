@@ -1,17 +1,21 @@
 const express = require('express');
 const routes = express.Router();
-const {getAllProducts,getProductById,getProductsByCategory,getProductsByFilter}=require('../Controllers/productsController');
+const {getAllProducts,getProductById,getProductsByCategory,getProductsByFilter,createProduct,getAllProductsSorted}=require('../Controllers/productsController');
 
 
 //////////get methods///////////
 
-routes.get('/:sort',getAllProducts);
+routes.get('/',getAllProducts);
+
+routes.get('/sorted/:sort',getAllProductsSorted);
 
 routes.get('/:id',getProductById);
 
-routes.get('/:category',getProductsByCategory);
+routes.get('/category/:category',getProductsByCategory);
 
 routes.get('/filter/:sort',getProductsByFilter);
+
+routes.post('/',createProduct);
 
 
 routes.use((err,req,res,next)=>{
@@ -24,15 +28,15 @@ routes.use((err,req,res,next)=>{
 })
 
 //get products by search
-routes.get('/',)
+// routes.get('/',)
 
-//create new product
-routes.post('/',)
+// //create new product
+// routes.post('/',)
 
-//update existing product
-routes.put('/',)
+// //update existing product
+// routes.put('/',)
 
-//delete product
-routes.delete('/',)
+// //delete product
+// routes.delete('/',)
 
 module.exports = routes

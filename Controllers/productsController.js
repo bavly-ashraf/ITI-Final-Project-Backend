@@ -9,7 +9,21 @@ const Categories = require("../Models/Categories");
 
 const getAllProducts = async (req, res, next) => {
   try {
-    const { sort } = req.params.sort;
+    let products=await Products.find();
+    if (products.length === 0) {
+      return next(new AppError("No products were found!"));
+    }
+    res.send(products);
+  } catch (error) {
+    return next(error);
+  }
+};
+
+//http://localhost:8080/products/sorted/:sort
+
+const getAllProductsSorted = async (req, res, next) => {
+  try {
+    const  sort  = req.params.sort;
     let products;
     switch (sort) {
       case 'lowest':
@@ -72,7 +86,7 @@ const getProductsByCategory = async (req, res, next) => {
   }
 };
 
-//http://localhost:8080/products/filter/:sort
+//http://localhost:8080/products/filter/
 
 const getProductsByFilter = async (req, res, next) => {
   try
@@ -86,7 +100,7 @@ const getProductsByFilter = async (req, res, next) => {
     } else if (max) {
       filter.price = { $lte: max };
     }
-    const { sort } = req.params.sort;
+    const  sort  = req.params.sort;
     let products;
     switch (sort) {
       case 'lowest':
@@ -135,4 +149,4 @@ const createProduct = async (req, res, next) => {
   }
 };
 
-module.exports = { getAllProducts ,getProductById,getProductsByCategory,getProductsByFilter};
+module.exports = { getAllProducts ,getProductById,getProductsByCategory,getProductsByFilter,createProduct,getAllProductsSorted};
