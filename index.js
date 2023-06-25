@@ -6,7 +6,7 @@ require('./db.js');
 require('dotenv/config');
 // const userRoutes=require('./Routes/userRoutes.js');
 const productRoutes = require('./Routes/productRoutes.js');
-// const categoryRoutes = require('./Routes/orderRoutes.js');
+const categoryRoutes = require('./Routes/categoryRoutes.js');
 // const orderRoutes = require('./Routes/orderRoutes.js');
 
 
@@ -23,7 +23,7 @@ const tokenAuth=require('./Helpers/tokenAuth.js'); //for token authentication be
 //////////////Routes////////////////
 // app.use('/users',userRoutes);
 app.use('/products', productRoutes);
-// app.use('/categories', tokenAuth, categoryRoutes);
+app.use('/categories', categoryRoutes);
 // app.use('/orders', tokenAuth, orderRoutes);
 
 

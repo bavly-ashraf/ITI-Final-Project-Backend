@@ -34,6 +34,10 @@ const ProductsSchema = new Schema({
       },
     },
   },
+  price: {
+    type: Number,
+    required: [true, "please enter the product price"],
+  },
   category: {
     type: Schema.Types.ObjectId,
     ref: "Categories",

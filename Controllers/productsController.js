@@ -106,6 +106,31 @@ const getProductsByFilter = async (req, res, next) => {
   }
 };
 
+////////////////////////////////////post methods//////////////////////////////////
 
+const createProduct = async (req, res, next) => {
+  try {
+    const { name,details,price,category,photo_url,vendor,productRating,no_of_reviews,no_of_items_in_stock,availability,Reviews } = req.body;
+
+    const product = new Products({ 
+      name, 
+      details,
+      price,
+      category,
+      photo_url,
+      vendor,
+      productRating,
+      no_of_reviews,
+      no_of_items_in_stock,
+      availability,
+      Reviews
+    });
+    await product.save();
+
+    res.send({ message: "Product added successfully", product });
+  } catch (error) {
+    return next(error);
+  }
+};
 
 module.exports = { getAllProducts ,getProductById,getProductsByCategory,getProductsByFilter};
