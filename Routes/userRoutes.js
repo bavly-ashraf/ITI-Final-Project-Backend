@@ -21,7 +21,7 @@ routes.post('/signup',verifySignUp,signUp);
 
 routes.post('/login',login);
 
-routes.post('/upload',verifyToken,upload.single('photo'),uploadFile);
+// routes.post('/upload',verifyToken,upload.single('photo'),uploadFile);
 
 
 //////////patch methods///////////

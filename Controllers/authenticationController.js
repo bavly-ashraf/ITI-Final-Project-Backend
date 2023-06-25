@@ -74,7 +74,7 @@ const login = async (req, res, next) => {
     if (user) {
       const isMatch = await user.checkPassword(password);
       if (!isMatch) return next(new AppError("wrong password"));
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+      const token = jwt.sign({ id: user._id }, 'mytoken');
 
       user.password = undefined;
       res.send({ user, token });

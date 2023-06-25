@@ -5,11 +5,11 @@ const cors = require('cors');
 require('./db.js');
 require('dotenv/config');
 
-// const userRoutes=require('./Routes/userRoutes.js');
 
 // require('express-async-errors');
 // const userRoutes=require('./Routes/userRoutes.js');
 
+const userRoutes=require('./Routes/userRoutes.js');
 const productRoutes = require('./Routes/productRoutes.js');
 const categoryRoutes = require('./Routes/categoryRoutes.js');
 // const orderRoutes = require('./Routes/orderRoutes.js');
@@ -26,20 +26,19 @@ const tokenAuth=require('./Helpers/tokenAuth.js'); //for token authentication be
 
 
 //////////////Routes////////////////
-// app.use('/users',userRoutes);
+app.use('/users',userRoutes);
 app.use('/products', productRoutes);
-app.use('/categories', categoryRoutes);
+app.use('/categories',tokenAuth, categoryRoutes);
 // app.use('/orders', tokenAuth, orderRoutes);
 
-/* globalErrorHandling */
-app.use((err, req, res, next) => {
-    const statusCode = err.statusCode || 500;
-    res.status(statusCode).json({
-        staus: statusCode,
-        message: err.message || 'internal server error',
-        errors: err.errors || []
-    })
 
+app.use((err,req,res,next)=>{
+	const statusCode = err.statusCode || 500;
+	res.status(statusCode).send({
+		status:statusCode,
+		message: err?.message || 'internal server error',
+		errors: err?.errors || []
+	})
 })
 
 app.listen(port,()=>{
