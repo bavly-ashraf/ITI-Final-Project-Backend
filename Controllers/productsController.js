@@ -33,6 +33,8 @@ const getAllProducts = async (req, res, next) => {
   }
 };
 
+const getProductsBySearch = (req,res,next)=>{
+}
 
 //http://localhost:8080/products/:id
 

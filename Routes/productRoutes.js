@@ -23,4 +23,16 @@ routes.use((err,req,res,next)=>{
 	})
 })
 
+//get products by search
+routes.get('/',)
+
+//create new product
+routes.post('/',)
+
+//update existing product
+routes.put('/',)
+
+//delete product
+routes.delete('/',)
+
 module.exports = routes
