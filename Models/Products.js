@@ -4,7 +4,6 @@ const { Schema } = mongoose;
 //products schema
 
 const ProductsSchema = new Schema({
-    
   name: {
     type: String,
     required: [true, "please enter the product name"],
@@ -36,7 +35,7 @@ const ProductsSchema = new Schema({
     },
   },
   category: {
-    type: Schema.type.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "Categories",
     required: [true, "please enter a category"],
   },
@@ -56,7 +55,7 @@ const ProductsSchema = new Schema({
   no_of_reviews: {
     type: String,
   },
-  no_of_items: {
+  no_of_items_in_stock: {
     type: Number,
   },
   availability: {
