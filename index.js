@@ -4,6 +4,7 @@ const port=3000;
 const cors = require('cors');
 require('./db.js');
 require('dotenv/config');
+require('express-async-errors');
 const userRoutes=require('./Routes/userRoutes.js');
 const productRoutes = require('./Routes/productRoutes.js');
 const categoryRoutes = require('./Routes/orderRoutes.js');
@@ -26,6 +27,16 @@ app.use('/products', authenticateUser, productRoutes);
 app.use('/categories', authenticateUser, categoryRoutes);
 app.use('/orders', authenticateUser, orderRoutes);
 
+/* globalErrorHandling */
+app.use((err, req, res, next) => {
+    const statusCode = err.statusCode || 500;
+    res.status(statusCode).json({
+        staus: statusCode,
+        message: err.message || 'internal server error',
+        errors: err.errors || []
+    })
+
+})
 
 app.listen(port,()=>{
     console.log(`listening on port ${port}`);
