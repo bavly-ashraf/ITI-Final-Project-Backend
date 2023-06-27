@@ -69,9 +69,9 @@ const {
 // Get methods
 routes.get("/", getUsers);
 routes.get("/:id", getUsersById);
-
+// verifySignUp
 // Post methods
-routes.post("/signup", verifySignUp, signUp);
+routes.post("/signup", signUp);
 routes.post("/login", verifyLogin, login);
 
 // Patch methods

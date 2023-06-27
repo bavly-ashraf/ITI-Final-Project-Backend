@@ -49,7 +49,13 @@ app.use("/users", userRoutes);
 // app.use("/products", authenticateUser, productRoutes);
 // app.use("/categories", authenticateUser, categoryRoutes);
 // app.use("/orders", authenticateUser, orderRoutes);
-
+app.use((err, req, res, next) => {
+  console.error("An error occurred:", err);
+  res.status(err.status || 500).json({
+    status: "error",
+    message: err.message || "Internal Server Error",
+  });
+});
 app.listen(port, () => {
   console.log(`listening on port ${port}`);
 });

@@ -49,6 +49,11 @@ const UsersSchema = new mongoose.Schema({
     required: [true, "Please enter a password"],
     selected: false,
   },
+  // isLogged: {
+  //   // enum: ["true", "false"],
+  //   // required: [true, "Please enter a role"],
+  //   // default: "false",
+  // },
   address: {
     apartment: {
       type: String,

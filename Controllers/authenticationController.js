@@ -115,46 +115,72 @@ const signUp = async (req, res, next) => {
 // const login = async (req, res, next) => {
 //   try {
 //     const { email, password } = req.body;
+//     console.log("Received login data:", email, password);
+
 //     if (!email || !password)
 //       return next(new AppError("Please enter the required info"));
+
 //     const user = await User.findOne({ email: email });
 //     if (user) {
 //       const isMatch = await user.checkPassword(password);
-//       if (!isMatch) return next(new AppError("wrong password"));
-//       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+//       if (!isMatch) return next(new AppError("Wrong password"));
 
+//       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
 //       user.password = undefined;
 //       res.send({ user, token });
 //     } else {
-//       return next(new AppError("user does not exist"));
+//       return next(new AppError("User does not exist"));
 //     }
 //   } catch (error) {
+//     console.error("An error occurred during login:", error);
 //     return next(error);
 //   }
 // };
+
+// if (user) {
+//   const isMatch = await user.checkPassword(password);
+//   if (!isMatch) return next(new AppError("Wrong password"));
+
+//   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+//   user.password = undefined;
+//   res.send({ user, token });
+// } else {
+//   return next(new AppError("User does not exist"));
+// }
 const login = async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
-    console.log("Received login data:", email, password);
+  console.log("login");
 
-    if (!email || !password)
-      return next(new AppError("Please enter the required info"));
+  const { email, password } = req.body;
+  console.log("Received login data:", email, password);
 
-    const user = await User.findOne({ email: email });
-    if (user) {
-      const isMatch = await user.checkPassword(password);
-      if (!isMatch) return next(new AppError("Wrong password"));
+  const user = await User.findOne({ email: email });
+  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
 
-      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-      user.password = undefined;
-      res.send({ user, token });
-    } else {
-      return next(new AppError("User does not exist"));
-    }
-  } catch (error) {
-    console.error("An error occurred during login:", error);
-    return next(error);
-  }
+  if (!user) return next(new AppError("Email or Passwrods isnt correct", 403));
+  const isMatch = await user.checkPassword(password);
+  if (!isMatch)
+    return next(new AppError("Email or Passwrods isnt correct", 404));
+  user.password = undefined;
+  // const roles=[2001.1984]
+  res.status(201).json({ roles: [2001.1984], message: "sucess", user, token });
+
+  // if (user) {
+  //   const isMatch = await user.checkPassword(password);
+  //   if (isMatch) {
+  //     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+  //     user.password = undefined;
+  //     console.log("hey there");
+  //     // return res.send({ user, token });
+  //     return res.json({ message: "Sucess ", user, token });
+  //   } else {
+  //     console.log("hey error");
+  //     return res.status(401).json({
+  //       message: "Incorrect Credentials ,Please make sure to enter the ",
+  //     });
+  //   }
+  // } else {
+  //   return next(new AppError("User do not exist", 404));
+  // }
 };
 
 ////////////////////////////////////patch methods//////////////////////////////////
