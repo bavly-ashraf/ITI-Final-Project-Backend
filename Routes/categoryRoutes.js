@@ -21,7 +21,6 @@ routes.patch("/:id", updateCategoryById);
 routes.delete("/:id",deleteCategoryById);
 
 
-
 routes.use((err,req,res,next)=>{
 	const statusCode = err.statusCode || 500;
 	res.status(statusCode).send({
