@@ -162,7 +162,7 @@ const login = async (req, res, next) => {
     return next(new AppError("Email or Passwrods isnt correct", 404));
   user.password = undefined;
   // const roles=[2001.1984]
-  res.status(201).json({ roles: [2001.1984], message: "sucess", user, token });
+  res.status(201).json({ roles: ["admin"], message: "sucess", user, token });
 
   // if (user) {
   //   const isMatch = await user.checkPassword(password);
