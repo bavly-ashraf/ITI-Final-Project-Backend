@@ -63,6 +63,7 @@ const {
   login,
   updatePassword,
   deleteUser,
+  UserData,
   uploadFile,
 } = authenticationController;
 
@@ -73,6 +74,7 @@ routes.get("/:id", getUsersById);
 // Post methods
 routes.post("/signup", signUp);
 routes.post("/login", verifyLogin, login);
+routes.post("/userData", UserData);
 
 // Patch methods
 routes.patch("/update", tokenAuth, updatePassword);
@@ -80,13 +82,13 @@ routes.patch("/update", tokenAuth, updatePassword);
 // Delete methods
 routes.delete("/", tokenAuth, verifyAdmin, deleteUser);
 
-routes.use((err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
-  res.status(statusCode).send({
-    status: statusCode,
-    message: err?.message || "Internal server error",
-    errors: err?.errors || [],
-  });
-});
+// routes.use((err, req, res, next) => {
+//   const statusCode = err.statusCode || 500;
+//   res.status(statusCode).send({
+//     status: statusCode,
+//     message: err?.message || "Internal server error",
+//     errors: err?.errors || [],
+//   });
+// });
 
 module.exports = routes;

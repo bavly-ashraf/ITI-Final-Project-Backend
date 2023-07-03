@@ -154,8 +154,18 @@ const login = async (req, res, next) => {
   console.log("Received login data:", email, password);
 
   const user = await User.findOne({ email: email });
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-
+  // const token = jwt.sign(
+  //   { id: user._id, isLogged: user.islogged },
+  //   process.env.JWT_SECRET
+  // );
+  const token = jwt.sign(
+    {
+      id: user._id,
+      // user: user.email,
+      // roles: user.roles,
+    },
+    process.env.JWT_SECRET
+  );
   if (!user) return next(new AppError("Email or Passwrods isnt correct", 403));
   const isMatch = await user.checkPassword(password);
   if (!isMatch)
@@ -182,6 +192,61 @@ const login = async (req, res, next) => {
   // } else {
   //   return next(new AppError("User do not exist", 404));
   // }
+};
+//////////////////////////////////////////////
+// const UserData = async (req, res, next) => {
+//   const { token } = req.body;
+//   console.log(token, req.body);
+
+//   try {
+//     // Verify and decode the token to get the user data and roles
+//     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+//     // Retrieve user data from the decoded token (e.g., from the database)
+//     const user = getUserDataFromToken(decodedToken);
+
+//     // Return the user data and roles in the response
+//     res.status(200).json({
+//       user,
+//       roles: user.roles,
+//     });
+//   } catch (error) {
+//     console.error("Error decoding token:", error);
+//     res.status(500).json({ error: "Failed to decode token" });
+//   }
+// };
+const getUserDataFromToken = async (decodedToken) => {
+  // Retrieve user data from the database or any other source based on the decoded token
+  // For example, you can use the decoded token's ID to fetch the corresponding user from the database
+  const userId = decodedToken.id;
+  const user = await User.findById(userId); // Assuming you have a User model
+
+  // Return the user data
+  return user;
+};
+const UserData = async (req, res, next) => {
+  const { token } = req.body;
+  console.log(token, req.body);
+
+  try {
+    // Verify and decode the token to get the user data and roles
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("hello token");
+    // Retrieve user data from the decoded token
+    const user = await getUserDataFromToken(decodedToken);
+
+    // Return the user data and roles in the response
+    res.status(200).json({
+      user,
+      token,
+    });
+    console.log(user);
+    if (!user)
+      return next(new AppError("Email or Passwrods isnt correct", 403));
+  } catch (error) {
+    console.error("Error decoding token:", error);
+    res.status(500).json({ error: "Failed to decode token" });
+  }
 };
 
 ////////////////////////////////////patch methods//////////////////////////////////
@@ -244,4 +309,5 @@ module.exports = {
   login,
   updatePassword,
   deleteUser,
+  UserData,
 };
