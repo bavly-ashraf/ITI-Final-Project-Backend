@@ -3,5 +3,32 @@ const { Schema } = mongoose;
 
 //Reviews schema 
 
-const Reviews=mongoose.model('Reviews',ReviewsSchema)
-module.exports=Reviews;
+const ReviewsSchema = new Schema({
+    reviewContent:{
+        type:String,
+        required: true,
+    },
+    rating: {
+        type: Number,
+        required: true,
+        min: 1,
+        max: 5
+     },
+     productId: {
+        type: Schema.Types.ObjectId,
+        ref: 'Products',
+        required: true
+     },
+     userId: {
+        type: Schema.Types.ObjectId,
+        ref: 'fbUsers',
+        required: true
+     },
+     createdAt: {
+        type: Date,
+        default: Date.now
+     }
+})
+
+const Review=mongoose.model('Review',ReviewsSchema)
+module.exports=Review;
