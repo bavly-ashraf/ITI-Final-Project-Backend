@@ -1,6 +1,7 @@
 require("dotenv").config();
 const AppError = require("../Helpers/AppError");
 const Review = require("../Models/Reviews");
+const User = require("../Models/Users");
 
 // const getAllReview = async (req, res, next) => {
 //     const reviews = await Review.find().populate({
@@ -23,23 +24,25 @@ const Review = require("../Models/Reviews");
 //     }).select('-__v')
 //     res.status(200).json({ message: 'success', postreviews })
 // }
-// const getUserReview = async (req, res, next) => {
-//     if (req.user.role !== "admin") return next(new AppError('unauthorized', 403))
-//     const userReviews = await Review.find({ user: req.params.id }).populate({
-//         path: 'post',
-//         select: '_id content',
-//     }).populate({
-//         path: 'user',
-//         select: '_id username email role',
-//     }).select('-__v')
-//     res.status(200).json({ message: 'success', userReviews})
-// }
+
+ const getUserReview = async (req, res, next) => {
+    const user = await User.findById(req.id);
+     if (user.role !== "admin") return next(new AppError('unauthorized', 403))
+     const userReviews = await Review.find({ userId: req.params.id }).populate({
+         path: 'productId',
+         select: '_id name',
+     }).populate({
+         path: 'userId',
+         select: '_id username email role',
+     }).select('-__v')
+     res.status(200).json({ message: 'success', userReviews})
+ }
 
 const addReview = async (req, res, next) => {
-    const { rating } = req.body
+    const { rating, reviewContent } = req.body
     const foundedReview = await Review.findOne({ userId: req.id, productId: req.params.id })
     if (foundedReview) return next(new AppError("only one review is allowed ", 400))
-    const addedreview = await Review.create({ rating, userId: req.id, productId: req.params.id })
+    const addedreview = await Review.create({ rating,reviewContent, userId: req.id, productId: req.params.id })
     res.status(201).json({ message: 'success', addedreview })
 }
 
@@ -64,4 +67,5 @@ const addReview = async (req, res, next) => {
 //     res.status(200).json({ message: 'success', deletedreview })
 // }
 
-module.exports = { getUserReview, getAllReview, addReview, getPostReview, updateReview, deletReview };
+// module.exports = { getUserReview, getAllReview, addReview, getPostReview, updateReview, deletReview };
+module.exports = { getUserReview, addReview };
