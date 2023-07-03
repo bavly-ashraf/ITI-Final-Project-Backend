@@ -229,6 +229,7 @@ const UserData = async (req, res, next) => {
   console.log(token, req.body);
 
   try {
+
     // Verify and decode the token to get the user data and roles
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
     console.log("hello token");
@@ -243,6 +244,7 @@ const UserData = async (req, res, next) => {
     console.log(user);
     if (!user)
       return next(new AppError("Email or Passwrods isnt correct", 403));
+
   } catch (error) {
     console.error("Error decoding token:", error);
     res.status(500).json({ error: "Failed to decode token" });

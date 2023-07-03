@@ -1,3 +1,4 @@
+
 const AppError = require("../Helpers/AppError");
 const User = require("../Models/Users");
 
@@ -14,3 +15,4 @@ const verifyAdmin = async (req, res, next) => {
 };
 
 module.exports = verifyAdmin;
+

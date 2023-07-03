@@ -1,3 +1,4 @@
+
 // const express = require("express");
 // const app = express();
 // const port = 3000;
@@ -8,6 +9,7 @@
 // const productRoutes = require("./Routes/productRoutes.js");
 // const categoryRoutes = require("./Routes/orderRoutes.js");
 // const orderRoutes = require("./Routes/orderRoutes.js");
+
 
 // app.use(cors());
 // app.options("*", cors());
@@ -42,13 +44,14 @@ app.options("*", cors());
 
 //////////////MiddleWares////////////////
 app.use(express.json());
+
 app.use(express.urlencoded({ extended: true }));
 
 //////////////Routes////////////////
 app.use("/users", userRoutes);
-// app.use("/products", authenticateUser, productRoutes);
-// app.use("/categories", authenticateUser, categoryRoutes);
-// app.use("/orders", authenticateUser, orderRoutes);
+ app.use("/products", productRoutes);
+ app.use("/categories",  categoryRoutes);
+ app.use("/orders",  orderRoutes);
 app.use((err, req, res, next) => {
   console.error("An error occurred:", err);
   res.status(err.status || 500).json({
@@ -59,6 +62,7 @@ app.use((err, req, res, next) => {
 app.listen(port, () => {
   console.log(`listening on port ${port}`);
 });
+
 
 // Add console logs to identify potential issues
 console.log("Server code executed");
