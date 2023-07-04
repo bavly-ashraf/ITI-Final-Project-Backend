@@ -49,7 +49,6 @@ const verifyLogin = async (req, res, next) => {
     return next(err);
   }
 };
-
 const signupSchema = joi.object({
   email: joi
     .string()
@@ -58,24 +57,25 @@ const signupSchema = joi.object({
     .label("Email"),
   username: joi.string().alphanum().min(3).max(30).required().label("Username"),
   password: joi.string().min(3).max(30).required().label("Password"),
-  password_confirm: joi
+  confirmPassword: joi
     .string()
     .valid(joi.ref("password"))
     .required()
-    .label("Password Confirmation")
+    .label("Confirm Password")
     .messages({ "any.only": "Passwords must match" }),
 });
-
 const verifySignUp = async (req, res, next) => {
-  const { email, username, password, password_confirm } = req.body;
+  const { email, username, password, confirmPassword } = req.body;
   try {
+    console.log("hello from verifySignUp");
     await signupSchema.validateAsync({
       email,
       username,
       password,
-      password_confirm,
+      confirmPassword,
     });
   } catch (err) {
+    console.log(err);
     return next(err);
   }
   next();
