@@ -66,6 +66,7 @@ const {
   deleteUser,
   UserData,
   Logout,
+  setAddress,
   uploadFile,
 } = authenticationController;
 
@@ -78,6 +79,7 @@ routes.post("/signup", verifySignUp, signUp);
 routes.post("/login", verifyLogin, login);
 routes.post("/userData", UserData);
 routes.post("/logout", verifyToken, Logout);
+routes.post("/setadress", verifyToken, setAddress);
 
 // Patch methods
 routes.patch("/update", tokenAuth, updatePassword);

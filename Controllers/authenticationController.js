@@ -208,26 +208,53 @@ const updatePassword = async (req, res, next) => {
 
 //http://localhost:8080/users
 
+// const deleteUser = async (req, res, next) => {
+//   try {
+//     const { email } = req.body;
+//     if (!email)
+//       return next(
+//         new AppError("please enter the email of the user you want to delete")
+//       );
+//     const user = await User.findOne({ email: email });
+//     if (!user) return next(new AppError("user does not exist"));
+//     await User.deleteOne({ email: email });
+
+//     await Post.deleteMany({ userId: user._id });
+//     await Review.deleteMany({ userId: user._id });
+
+//     res.send("removed user");
+//   } catch (error) {
+//     return next(error);
+//   }
+// };////
 const deleteUser = async (req, res, next) => {
   try {
-    const { email } = req.body;
-    if (!email)
+    const { userId } = req.userId;
+    if (!userId)
       return next(
-        new AppError("please enter the email of the user you want to delete")
+        new AppError("Please provide the ID of the user you want to delete")
       );
-    const user = await User.findOne({ email: email });
-    if (!user) return next(new AppError("user does not exist"));
-    await User.deleteOne({ email: email });
 
+    // Verify if the requester is an admin
+    const admin = await User.findById(req.id);
+    if (!admin || admin.role !== "admin") {
+      return next(new AppError("Only admins can delete users", 403));
+    }
+
+    const user = await User.findById(userId);
+    if (!user) return next(new AppError("User does not exist"));
+
+    await User.deleteOne({ _id: userId });
     await Post.deleteMany({ userId: user._id });
     await Review.deleteMany({ userId: user._id });
 
-    res.send("removed user");
+    res.send("User removed");
   } catch (error) {
     return next(error);
   }
 };
 
+////////////////////////////
 const Logout = async (req, res, next) => {
   const idd = req.userId;
   console.log(idd);
@@ -247,6 +274,36 @@ const Logout = async (req, res, next) => {
   res.status(200).json({ message: "Logout successful" });
 };
 
+//////////////////////////////////////////////////
+//Adress
+const setAddress = async (req, res, next) => {
+  try {
+    const { address } = req.body;
+    const userId = req.userId;
+
+    // Update the user's address in the database
+    const user = await User.findById(userId);
+    if (!user) {
+      return next(new AppError("User not found", 404));
+    }
+
+    // Update the user's address fields with the new values
+    user.address.apartment = address.apartment;
+    user.address.floor = address.floor;
+    user.address.buildingNo = address.buildingNo;
+    user.address.street = address.street;
+    user.address.zip = address.zip;
+    user.address.city = address.city;
+    user.address.country = address.country;
+
+    await user.save();
+
+    res.status(200).json({ message: "Address updated successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getUsers,
   getUsersById,
@@ -256,4 +313,5 @@ module.exports = {
   deleteUser,
   UserData,
   Logout,
+  setAddress,
 };
