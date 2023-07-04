@@ -51,11 +51,12 @@ const signUp = async (req, res, next) => {
   console.log("signUp");
   try {
     console.log(req.body);
-    const { email, username, password, confirmPassword } = req.body;
+    const { email, username,role , password, confirmPassword} = req.body;
     console.log(
       "Received user data:",
       email,
       username,
+      role,
       password,
       confirmPassword
     );
@@ -74,6 +75,7 @@ const signUp = async (req, res, next) => {
     const hashed_password = await bcrypt.hash(password, 10);
     const newUser = new User({
       email,
+      role,
       username,
       password: hashed_password,
     });
