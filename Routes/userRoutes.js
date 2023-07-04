@@ -1,4 +1,3 @@
-
 const express = require("express");
 const routes = express.Router();
 const authenticationController = require("../Controllers/authenticationController");
@@ -7,6 +6,7 @@ const multer = require("multer");
 const upload = multer({ dest: "uploads/" });
 const tokenAuth = require("../Helpers/tokenAuth");
 const verifyAdmin = require("../Helpers/verifyAdmin");
+const verifyToken = require("../Helpers/tokenAuth");
 
 const {
   getUsers,
@@ -16,23 +16,28 @@ const {
   updatePassword,
   deleteUser,
   UserData,
+  Logout,
+  setAddress,
+  updateUser,
   uploadFile,
 } = authenticationController;
 
 // Get methods
-routes.get("/", getUsers);
+routes.get("/", tokenAuth, verifyAdmin, getUsers);
 routes.get("/:id", getUsersById);
 // verifySignUp
 // Post methods
-routes.post("/signup", signUp);
+routes.post("/signup", verifySignUp, signUp);
 routes.post("/login", verifyLogin, login);
 routes.post("/userData", UserData);
+routes.post("/logout", verifyToken, Logout);
+routes.post("/setadress", verifyToken, setAddress);
 
 // Patch methods
-routes.patch("/update", tokenAuth, updatePassword);
+routes.patch("/update", tokenAuth, updateUser);
 
 // Delete methods
-routes.delete("/", tokenAuth, verifyAdmin, deleteUser);
+routes.delete("/deleteuser", tokenAuth, deleteUser);
 
 
 

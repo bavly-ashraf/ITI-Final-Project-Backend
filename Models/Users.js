@@ -22,11 +22,10 @@ const UsersSchema = new mongoose.Schema({
     required: [true, "Please enter a password"],
     selected: false,
   },
-  // isLogged: {
-  //   // enum: ["true", "false"],
-  //   // required: [true, "Please enter a role"],
-  //   // default: "false",
-  // },
+  isLogged: {
+    type: Boolean,
+    default: "false",
+  },
   address: {
     apartment: {
       type: String,
@@ -91,5 +90,5 @@ UsersSchema.methods.checkPassword = async function (password) {
   return isMatch;
 };
 
-const User = mongoose.model("fbUsers", UsersSchema);
+const User = mongoose.model("Users", UsersSchema);
 module.exports = User;
