@@ -67,11 +67,12 @@ const {
   UserData,
   Logout,
   setAddress,
+  updateUser,
   uploadFile,
 } = authenticationController;
 
 // Get methods
-routes.get("/", getUsers);
+routes.get("/", tokenAuth, verifyAdmin, getUsers);
 routes.get("/:id", getUsersById);
 // verifySignUp
 // Post methods
@@ -82,10 +83,10 @@ routes.post("/logout", verifyToken, Logout);
 routes.post("/setadress", verifyToken, setAddress);
 
 // Patch methods
-routes.patch("/update", tokenAuth, updatePassword);
+routes.patch("/update", tokenAuth, updateUser);
 
 // Delete methods
-routes.delete("/", tokenAuth, verifyAdmin, deleteUser);
+routes.delete("/deleteuser", tokenAuth, deleteUser);
 
 routes.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;

@@ -15,20 +15,28 @@ const jwt = require("jsonwebtoken");
 
 const getUsers = async (req, res, next) => {
   try {
-    const users = await User.find().select("-password");
-    if (users.length == 0) return next(new AppError("Users not found"));
+    // Verify if the requester is an admin
+    const admin = await User.findById(req.userId);
+    if (admin.role !== "admin") {
+      return next(new AppError("Only admins can access user data", 403));
+    }
+
+    const users = await User.find({}, "-password"); // Exclude the password field from the response
+
     res.send(users);
   } catch (error) {
     return next(error);
   }
 };
 
-//http://localhost:8080/users
+//http://localhost:8080/users/id
 
 const getUsersById = async (req, res, next) => {
   try {
-    const user = await User.findById(req.params.id).select("-password");
-    if (!user) return next(new AppError("User not found"));
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return next(new AppError("User not found", 404));
+    }
     res.send(user);
   } catch (error) {
     return next(error);
@@ -117,29 +125,11 @@ const login = async (req, res, next) => {
   user.isLogged = true;
   await user.save();
   user.password = undefined;
-  // const roles=[2001.1984]
   // res.status(201).json({ roles: ["admin"], message: "sucess", user, token });
   res.status(201).json({ message: "sucess", user, token });
-
-  // if (user) {
-  //   const isMatch = await user.checkPassword(password);
-  //   if (isMatch) {
-  //     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-  //     user.password = undefined;
-  //     console.log("hey there");
-  //     // return res.send({ user, token });
-  //     return res.json({ message: "Sucess ", user, token });
-  //   } else {
-  //     console.log("hey error");
-  //     return res.status(401).json({
-  //       message: "Incorrect Credentials ,Please make sure to enter the ",
-  //     });
-  //   }
-  // } else {
-  //   return next(new AppError("User do not exist", 404));
-  // }
 };
-
+//////////////////////////////////////////////////////
+//////////////////
 const getUserDataFromToken = async (decodedToken) => {
   // Retrieve user data from the database or any other source based on the decoded token
   // For example, you can use the decoded token's ID to fetch the corresponding user from the database
@@ -159,14 +149,14 @@ const UserData = async (req, res, next) => {
     console.log("hello token");
     // Retrieve user data from the decoded token
     const user = await getUserDataFromToken(decodedToken);
-    user.password = undefined;
+    // user.password = undefined;
 
     // Return the user data and roles in the response
     res.status(200).json({
       user,
       token,
     });
-    console.log(user);
+    // console.log(user);
     if (!user)
       return next(new AppError("Email or Passwrods isnt correct", 403));
   } catch (error) {
@@ -176,7 +166,6 @@ const UserData = async (req, res, next) => {
 };
 
 ////////////////////////////////////patch methods//////////////////////////////////
-
 //http://localhost:8080/users/update
 
 const updatePassword = async (req, res, next) => {
@@ -203,41 +192,39 @@ const updatePassword = async (req, res, next) => {
     return next(error);
   }
 };
+////////////////////////////////////////////
+const updateUser = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const updatedData = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return next(new AppError("User not found"));
+    }
+
+    Object.assign(user, updatedData);
+    await user.save();
+
+    res.send(user);
+  } catch (error) {
+    return next(error);
+  }
+};
 
 ////////////////////////////////////delete methods//////////////////////////////////
 
-//http://localhost:8080/users
-
-// const deleteUser = async (req, res, next) => {
-//   try {
-//     const { email } = req.body;
-//     if (!email)
-//       return next(
-//         new AppError("please enter the email of the user you want to delete")
-//       );
-//     const user = await User.findOne({ email: email });
-//     if (!user) return next(new AppError("user does not exist"));
-//     await User.deleteOne({ email: email });
-
-//     await Post.deleteMany({ userId: user._id });
-//     await Review.deleteMany({ userId: user._id });
-
-//     res.send("removed user");
-//   } catch (error) {
-//     return next(error);
-//   }
-// };////
 const deleteUser = async (req, res, next) => {
   try {
-    const { userId } = req.userId;
+    const { userId } = req.body;
     if (!userId)
       return next(
         new AppError("Please provide the ID of the user you want to delete")
       );
 
     // Verify if the requester is an admin
-    const admin = await User.findById(req.id);
-    if (!admin || admin.role !== "admin") {
+    const admin = await User.findById(req.userId);
+    if (admin.role !== "admin") {
       return next(new AppError("Only admins can delete users", 403));
     }
 
@@ -245,9 +232,9 @@ const deleteUser = async (req, res, next) => {
     if (!user) return next(new AppError("User does not exist"));
 
     await User.deleteOne({ _id: userId });
-    await Post.deleteMany({ userId: user._id });
-    await Review.deleteMany({ userId: user._id });
 
+    //     await Post.deleteMany({ userId: user._id });
+    //     await Review.deleteMany({ userId: user._id });
     res.send("User removed");
   } catch (error) {
     return next(error);
@@ -314,4 +301,5 @@ module.exports = {
   UserData,
   Logout,
   setAddress,
+  updateUser,
 };

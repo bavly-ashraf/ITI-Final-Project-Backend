@@ -1,9 +1,8 @@
-
 const AppError = require("../Helpers/AppError");
 const User = require("../Models/Users");
 
 const verifyAdmin = async (req, res, next) => {
-  const admin = await User.findById(req.id);
+  const admin = await User.findById(req.userId);
   if (!admin) {
     return next(new AppError("user not found"));
   } else {
@@ -15,4 +14,3 @@ const verifyAdmin = async (req, res, next) => {
 };
 
 module.exports = verifyAdmin;
-
