@@ -101,11 +101,7 @@ const signUp = async (req, res, next) => {
 };
 
 const login = async (req, res, next) => {
-  console.log("login");
-
   const { email, password } = req.body;
-  console.log("Received login data:", email, password);
-
   const user = await User.findOne({ email: email });
   if (!user) return next(new AppError("Email or Passwrods isnt correct", 403));
 

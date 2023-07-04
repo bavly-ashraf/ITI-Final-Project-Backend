@@ -14,6 +14,17 @@ const getAllReview = async (req, res, next) => {
     res.status(200).json({ message: 'success', reviews })
 }
 
+const getTopRatedReview =async(req, res, next)=>{
+    const reviews = await Review.find({rating:5}).populate({
+        path: 'productId',
+        select: '_id name',
+    }).populate({
+        path: 'userId',
+        select: '_id username city country',
+    }).select('-__v')
+    res.status(200).json({ message: 'success', reviews })
+}
+
 const getProductReview = async (req, res, next) => {
     const productReviews = await Review.find({ productId: req.params.id }).populate({
         path: 'productId',
@@ -37,6 +48,8 @@ const getProductReview = async (req, res, next) => {
      }).select('-__v')
      res.status(200).json({ message: 'success', userReviews})
  }
+
+
 
 const addReview = async (req, res, next) => {
     const { rating, reviewContent } = req.body
@@ -66,4 +79,4 @@ const deleteReview = async (req, res, next) => {
 }
 
 // module.exports = { getUserReview, getAllReview, addReview, getPostReview, updateReview, deletReview };
-module.exports = { getUserReview, addReview , getProductReview , getAllReview , updateReview, deleteReview};
+module.exports = { getUserReview,getTopRatedReview, addReview , getProductReview , getAllReview , updateReview, deleteReview};
