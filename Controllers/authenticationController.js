@@ -39,32 +39,6 @@ const getUsersById = async (req, res, next) => {
 
 //http://localhost:8080/users/signup
 
-// const signUp = async (req, res, next) => {
-//   try {
-//     const { email, username, role, password, password_confirm } = req.body;
-//     if (!email || !username || !role || !password || !password_confirm)
-//       return next(new AppError("Please enter the required info"));
-//     const user = await User.findOne({ email });
-//     if (user) {
-//       return next(new AppError("user email already exists"));
-//     } else {
-//       const hashed_password = await bcrypt.hash(password, 10);
-//       const newUser = new User({
-//         email,
-//         username,
-//         role,
-//         password: hashed_password,
-//       });
-//       await newUser.save();
-//       const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
-
-//       newUser.password = undefined;
-//       res.send({ newUser, token });
-//     }
-//   } catch (error) {
-//     return next(error);
-//   }
-// };
 const signUp = async (req, res, next) => {
   console.log("signUp");
   try {
@@ -97,7 +71,15 @@ const signUp = async (req, res, next) => {
     });
     await newUser.save();
 
-    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET);
+    const token = jwt.sign(
+      {
+        id: newUser._id,
+        user: newUser.email,
+        roles: newUser.role,
+        isLogged: newUser.isLogged,
+      },
+      process.env.JWT_SECRET
+    );
 
     newUser.password = undefined;
     res.send({ newUser, token });
@@ -110,43 +92,6 @@ const signUp = async (req, res, next) => {
   console.log("End of signUp");
 };
 
-//http://localhost:8080/users/login
-
-// const login = async (req, res, next) => {
-//   try {
-//     const { email, password } = req.body;
-//     console.log("Received login data:", email, password);
-
-//     if (!email || !password)
-//       return next(new AppError("Please enter the required info"));
-
-//     const user = await User.findOne({ email: email });
-//     if (user) {
-//       const isMatch = await user.checkPassword(password);
-//       if (!isMatch) return next(new AppError("Wrong password"));
-
-//       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-//       user.password = undefined;
-//       res.send({ user, token });
-//     } else {
-//       return next(new AppError("User does not exist"));
-//     }
-//   } catch (error) {
-//     console.error("An error occurred during login:", error);
-//     return next(error);
-//   }
-// };
-
-// if (user) {
-//   const isMatch = await user.checkPassword(password);
-//   if (!isMatch) return next(new AppError("Wrong password"));
-
-//   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-//   user.password = undefined;
-//   res.send({ user, token });
-// } else {
-//   return next(new AppError("User does not exist"));
-// }
 const login = async (req, res, next) => {
   console.log("login");
 
@@ -154,15 +99,14 @@ const login = async (req, res, next) => {
   console.log("Received login data:", email, password);
 
   const user = await User.findOne({ email: email });
-  // const token = jwt.sign(
-  //   { id: user._id, isLogged: user.islogged },
-  //   process.env.JWT_SECRET
-  // );
+  if (!user) return next(new AppError("Email or Passwrods isnt correct", 403));
+
   const token = jwt.sign(
     {
       id: user._id,
-      // user: user.email,
-      // roles: user.roles,
+      user: user.email,
+      roles: user.role,
+      isLogged: user.isLogged,
     },
     process.env.JWT_SECRET
   );
@@ -170,6 +114,8 @@ const login = async (req, res, next) => {
   const isMatch = await user.checkPassword(password);
   if (!isMatch)
     return next(new AppError("Email or Passwrods isnt correct", 404));
+  user.isLogged = true;
+  await user.save();
   user.password = undefined;
   // const roles=[2001.1984]
   // res.status(201).json({ roles: ["admin"], message: "sucess", user, token });
@@ -193,34 +139,13 @@ const login = async (req, res, next) => {
   //   return next(new AppError("User do not exist", 404));
   // }
 };
-//////////////////////////////////////////////
-// const UserData = async (req, res, next) => {
-//   const { token } = req.body;
-//   console.log(token, req.body);
 
-//   try {
-//     // Verify and decode the token to get the user data and roles
-//     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-
-//     // Retrieve user data from the decoded token (e.g., from the database)
-//     const user = getUserDataFromToken(decodedToken);
-
-//     // Return the user data and roles in the response
-//     res.status(200).json({
-//       user,
-//       roles: user.roles,
-//     });
-//   } catch (error) {
-//     console.error("Error decoding token:", error);
-//     res.status(500).json({ error: "Failed to decode token" });
-//   }
-// };
 const getUserDataFromToken = async (decodedToken) => {
   // Retrieve user data from the database or any other source based on the decoded token
   // For example, you can use the decoded token's ID to fetch the corresponding user from the database
   const userId = decodedToken.id;
   const user = await User.findById(userId); // Assuming you have a User model
-
+  console.log("getuserdata", userId);
   // Return the user data
   return user;
 };
@@ -229,12 +154,12 @@ const UserData = async (req, res, next) => {
   console.log(token, req.body);
 
   try {
-
     // Verify and decode the token to get the user data and roles
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
     console.log("hello token");
     // Retrieve user data from the decoded token
     const user = await getUserDataFromToken(decodedToken);
+    user.password = undefined;
 
     // Return the user data and roles in the response
     res.status(200).json({
@@ -244,7 +169,6 @@ const UserData = async (req, res, next) => {
     console.log(user);
     if (!user)
       return next(new AppError("Email or Passwrods isnt correct", 403));
-
   } catch (error) {
     console.error("Error decoding token:", error);
     res.status(500).json({ error: "Failed to decode token" });
@@ -304,6 +228,25 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
+const Logout = async (req, res, next) => {
+  const idd = req.userId;
+  console.log(idd);
+
+  // Find the user by ID
+
+  const user = await User.findById(idd); // Assuming you have a User model
+  console.log("hello from after");
+
+  if (!user) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  user.isLogged = false;
+  await user.save();
+  console.log(user.isLogged);
+  res.status(200).json({ message: "Logout successful" });
+};
+
 module.exports = {
   getUsers,
   getUsersById,
@@ -312,4 +255,5 @@ module.exports = {
   updatePassword,
   deleteUser,
   UserData,
+  Logout,
 };
