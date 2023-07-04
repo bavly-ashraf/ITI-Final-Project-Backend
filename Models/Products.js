@@ -59,6 +59,7 @@ const ProductsSchema = new Schema({
   availability: {
     type: String,
     enum: ["available", "out of stock"],
+    default: "available",
   },
 });
 
