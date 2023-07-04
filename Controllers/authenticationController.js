@@ -112,57 +112,15 @@ const signUp = async (req, res, next) => {
 
 //http://localhost:8080/users/login
 
-// const login = async (req, res, next) => {
-//   try {
-//     const { email, password } = req.body;
-//     console.log("Received login data:", email, password);
-
-//     if (!email || !password)
-//       return next(new AppError("Please enter the required info"));
-
-//     const user = await User.findOne({ email: email });
-//     if (user) {
-//       const isMatch = await user.checkPassword(password);
-//       if (!isMatch) return next(new AppError("Wrong password"));
-
-//       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-//       user.password = undefined;
-//       res.send({ user, token });
-//     } else {
-//       return next(new AppError("User does not exist"));
-//     }
-//   } catch (error) {
-//     console.error("An error occurred during login:", error);
-//     return next(error);
-//   }
-// };
-
-// if (user) {
-//   const isMatch = await user.checkPassword(password);
-//   if (!isMatch) return next(new AppError("Wrong password"));
-
-//   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-//   user.password = undefined;
-//   res.send({ user, token });
-// } else {
-//   return next(new AppError("User does not exist"));
-// }
 const login = async (req, res, next) => {
-  console.log("login");
-
   const { email, password } = req.body;
-  console.log("Received login data:", email, password);
-
   const user = await User.findOne({ email: email });
-  // const token = jwt.sign(
-  //   { id: user._id, isLogged: user.islogged },
-  //   process.env.JWT_SECRET
-  // );
   const token = jwt.sign(
     {
       id: user._id,
       // user: user.email,
       // roles: user.roles,
+      // isLogged: user.islogged 
     },
     process.env.JWT_SECRET
   );
@@ -174,53 +132,14 @@ const login = async (req, res, next) => {
   // const roles=[2001.1984]
   // res.status(201).json({ roles: ["admin"], message: "sucess", user, token });
   res.status(201).json({ message: "sucess", user, token });
-
-  // if (user) {
-  //   const isMatch = await user.checkPassword(password);
-  //   if (isMatch) {
-  //     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
-  //     user.password = undefined;
-  //     console.log("hey there");
-  //     // return res.send({ user, token });
-  //     return res.json({ message: "Sucess ", user, token });
-  //   } else {
-  //     console.log("hey error");
-  //     return res.status(401).json({
-  //       message: "Incorrect Credentials ,Please make sure to enter the ",
-  //     });
-  //   }
-  // } else {
-  //   return next(new AppError("User do not exist", 404));
-  // }
 };
+
 //////////////////////////////////////////////
-// const UserData = async (req, res, next) => {
-//   const { token } = req.body;
-//   console.log(token, req.body);
-
-//   try {
-//     // Verify and decode the token to get the user data and roles
-//     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-
-//     // Retrieve user data from the decoded token (e.g., from the database)
-//     const user = getUserDataFromToken(decodedToken);
-
-//     // Return the user data and roles in the response
-//     res.status(200).json({
-//       user,
-//       roles: user.roles,
-//     });
-//   } catch (error) {
-//     console.error("Error decoding token:", error);
-//     res.status(500).json({ error: "Failed to decode token" });
-//   }
-// };
 const getUserDataFromToken = async (decodedToken) => {
   // Retrieve user data from the database or any other source based on the decoded token
   // For example, you can use the decoded token's ID to fetch the corresponding user from the database
   const userId = decodedToken.id;
   const user = await User.findById(userId); // Assuming you have a User model
-
   // Return the user data
   return user;
 };

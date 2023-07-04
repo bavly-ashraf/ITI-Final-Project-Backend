@@ -2,33 +2,6 @@ const mongoose = require("mongoose");
 const { Schema } = mongoose;
 const bcrypt = require("bcrypt");
 
-// const UsersSchema = new Schema({
-//     email:{
-//         type:String,
-//         required:[true,'please enter an email']
-//     },
-//     username:{
-//         type:String,
-//         required:[true,'please enter a username']
-//     },
-//     role:{
-//         type:String,
-//         enum:['admin', 'user','creator'],
-//         required:[true,'please enter a username']
-//     },
-//     password:{
-//         type:String,
-//         required:[true,'please enter a password'],
-//         selected:false
-//     },
-//     photo_url:[
-//         {
-//             type:String
-//         }
-//     ]
-
-//   });
-
 const UsersSchema = new mongoose.Schema({
   email: {
     type: String,
