@@ -9,7 +9,7 @@ const cloudinary = require("../Helpers/cloudinary.js");
 //http://localhost:8080/products
 
 const getAllProducts = async (req, res, next) => {
-  try {
+  
     const { sort } = req.params;
     let products;
     switch (sort) {
@@ -24,14 +24,9 @@ const getAllProducts = async (req, res, next) => {
         break;
     }
 
-    if (products.length === 0) {
-      return next(new AppError("No products were found!"));
-    }
+    if (products.length === 0) return next(new AppError("No products were found!",404));
 
-    res.send(products);
-  } catch (error) {
-    return next(error);
-  }
+    res.status(200).send(products);
 };
 
 //http://localhost:8080/products/?product=
@@ -45,44 +40,25 @@ const getProductsBySearch = async(req,res,next)=>{
 //http://localhost:8080/products/:id
 
 const getProductById = async (req, res, next) => {
-  try {
     const { id } = req.params;
-
     const product = await Products.findById(id);
-
-    if (!product) {
-      return next(new AppError("Product not found", 404));
-    }
-
-    res.send({ message: "Product retrieved successfully", product });
-  } catch (err) 
-  {
-    return next(err);
-  }
+    if (!product) return next(new AppError("Product not found", 404));
+    res.status(200).json({ message: "Product retrieved successfully", product });
 };
 
 //http://localhost:8080/products/:category/
 
 const getProductsByCategory = async (req, res, next) => {
-  try
-  {
     const category = await Categories.findById(req.params.category);
-    if (!category) return next(new AppError("category does not exist"));
+    if (!category) return next(new AppError("category does not exist",404));
     const products = await Products.find({category});
-    if (products.length == 0) return next(new AppError("no products were found!"));
-    res.send({ message: "All products retrieved successfully", products });
-  }
-  catch (err) 
-  {
-    return next(err);
-  }
+    if (products.length == 0) return next(new AppError("no products were found!",404));
+    res.status(200).json({ message: "All products retrieved successfully", products });
 };
 
 //http://localhost:8080/products/filter/:sort
 
 const getProductsByFilter = async (req, res, next) => {
-  try
-  {
     const {category,max,min} = req.body;
     let filter = { category };
     if (min && max) {
@@ -105,13 +81,8 @@ const getProductsByFilter = async (req, res, next) => {
         products = await Products.find(filter);
         break;
     }
-    if (products.length == 0) return next(new AppError("no products were found!"));
-    res.send({ message: "All posts retrieved successfully", products });
-  }
-  catch (err) 
-  {
-    return next(err);
-  }
+    if (products.length == 0) return next(new AppError("no products were found!",404));
+    res.status(200).json({ message: "All posts retrieved successfully", products });
 };
 
 ////////////////////////////////////post methods//////////////////////////////////
@@ -175,8 +146,42 @@ const updateProduct = async(req,res,next)=>{
     res.status(200).json({message:"success",updatedProduct});
 }
 
+////////////////////////////////////TopRated method//////////////////////////////////
 
-module.exports = { getAllProducts ,getProductById,getProductsByCategory,getProductsByFilter,getProductsBySearch,createProduct,deleteProduct,updateProduct};
+//http://localhost:8080/products/:id
+
+const topRatedProducts = async (req, res, next) => {
+  // Aggregate pipeline to get the top 4 rated products
+  const pipeline = [
+      {
+          $lookup: {
+              from: 'reviews',
+              localField: '_id',
+              foreignField: 'productId',
+              as: 'reviewArr'
+          }
+      },
+      {
+          $addFields: {
+              averageRating: { $avg: '$reviewArr.rating' }
+          }
+      },
+      {
+          $sort: { averageRating: -1 }
+      },
+      {
+          $limit: 4
+      }
+  ];
+
+  const topProducts = await Products.aggregate(pipeline)
+  if (!topProducts) return next(new AppError('Error retrieving top rated products', 404))
+  res.status(200).json({ message: 'Top 4 rated products', topProducts })
+
+}
+
+
+module.exports = { getAllProducts, topRatedProducts ,getProductById,getProductsByCategory,getProductsByFilter,getProductsBySearch,createProduct,deleteProduct,updateProduct};
 
 
 // const details =  {

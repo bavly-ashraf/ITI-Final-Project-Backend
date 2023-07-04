@@ -53,9 +53,6 @@ const ProductsSchema = new Schema({
     type: String,
     required: [true, "please enter a vendor name"],
   },
-  productRating: {
-    type: String,
-  },
   no_of_items_in_stock: {
     type: Number,
   },
@@ -63,13 +60,19 @@ const ProductsSchema = new Schema({
     type: String,
     enum: ["available", "out of stock"],
   },
-  Reviews: [
-    {
-      type: Schema.Types.ObjectId,
-      ref: "Review",
-    },
-  ],
 });
+
+ProductsSchema.virtual('reviews', {
+  ref: 'Review',
+  localField: '_id', 
+  foreignField: 'productId',    
+  justOne: false,
+
+})
+
+// Enable virtual population
+ProductsSchema.set('toObject', { virtuals: true });
+ProductsSchema.set('toJSON', { virtuals: true, transform: (_doc, ret) => { delete ret.id; } });
 
 const Products = mongoose.model("Products", ProductsSchema);
 module.exports = Products;
