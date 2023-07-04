@@ -56,9 +56,6 @@ const ProductsSchema = new Schema({
   productRating: {
     type: String,
   },
-  no_of_reviews: {
-    type: String,
-  },
   no_of_items_in_stock: {
     type: Number,
   },

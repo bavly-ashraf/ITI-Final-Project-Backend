@@ -1,42 +1,29 @@
 const express = require('express');
 const routes = express.Router();
-const {getAllProducts,getProductById,getProductsByCategory,getProductsByFilter,createProduct,getAllProductsSorted}=require('../Controllers/productsController');
+const {getAllProducts,getProductById,getProductsByCategory,getProductsByFilter, getProductsBySearch, createProduct, deleteProduct, updateProduct}=require('../Controllers/productsController');
+const fileUpload = require('../Helpers/fileUploader');
 
 
 //////////get methods///////////
 
-routes.get('/',getAllProducts);
-
-routes.get('/sorted/:sort',getAllProductsSorted);
+routes.get('/:sort',getAllProducts);
 
 routes.get('/:id',getProductById);
 
-routes.get('/category/:category',getProductsByCategory);
+routes.get('/:category',getProductsByCategory);
 
 routes.get('/filter/:sort',getProductsByFilter);
 
-routes.post('/',createProduct);
-
-
-routes.use((err,req,res,next)=>{
-	const statusCode = err.statusCode || 500;
-	res.status(statusCode).send({
-		status:statusCode,
-		message: err?.message || 'internal server error',
-		errors: err?.errors || []
-	})
-})
-
 //get products by search
-// routes.get('/',)
+routes.get('/',getProductsBySearch)
 
-// //create new product
-// routes.post('/',)
+//create new product
+routes.post('/:category',fileUpload(),createProduct)
 
-// //update existing product
-// routes.put('/',)
+//update existing product
+routes.patch('/:id',updateProduct)
 
-// //delete product
-// routes.delete('/',)
+//delete product
+routes.delete('/:id',deleteProduct)
 
 module.exports = routes
