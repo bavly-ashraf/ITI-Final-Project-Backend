@@ -8,19 +8,15 @@ const verifyToken = require("../Helpers/tokenAuth");
 
 //methods[get,post,patch,delete]
 
-const {
-  getAllOrders,
-  getOrderById,
-  getUserOrder,
-  addOrder,
-} = require("../Controllers/orderController");
+const { getAllOrders,getOrderById,getUserOrder,addOrder,deleteOrder} = require('../Controllers/orderController');
 
-router.get("/", verifyToken, getAllOrders);
-router.get("/:id", getOrderById);
-router.get("/user/:id", getUserOrder);
+router.get('/',verifyToken, getAllOrders)
+router.get('/:id', getOrderById)
+router.get('/user/:id', getUserOrder)
+router.post('/',verifyToken, addOrder)
 
-router.post("/", addOrder);
-// router.patch('/:id', updateOrder)
-// router.delete('/:id', deletOrder)
+router.delete('/:id',verifyToken, deleteOrder)
+
+
 
 module.exports = router;
