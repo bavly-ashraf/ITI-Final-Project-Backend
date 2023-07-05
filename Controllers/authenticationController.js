@@ -148,7 +148,7 @@ const UserData = async (req, res, next) => {
     // Retrieve user data from the decoded token
     const user = await getUserDataFromToken(decodedToken);
     // user.password = undefined;
-
+    console.log(user);
     // Return the user data and roles in the response
     res.status(200).json({
       user,
