@@ -28,12 +28,12 @@ const addOrder = async (req, res, next) => {
     const { orderItems, Address, city, zip, country, phone, totalPrice } = req.body;
     
     // Check if user's role is "user"
-    const user = await User.findById(req.id);
+    const user = await User.findById(req.userId);
     if (!user || user.role !== 'user') {
         return next(new AppError('Only users can create orders.', 403));
     }
     
-    const order = await Order.create({ orderItems, Address, city, zip, country, phone, totalPrice, userId:req.id });
+    const order = await Order.create({ orderItems, Address, city, zip, country, phone, totalPrice, userId:req.userId });
     res.status(201).json({ message: 'success', order });
 }
 
@@ -51,7 +51,7 @@ const getUserOrder = async (req, res, next) => {
 
 const deleteOrder = async (req, res, next) => {
     const { id } = req.params;
-    const userFromToken = req.id;
+    const userFromToken = req.userId;
     const user = await User.findById(userFromToken)
     const foundedOrder = await Order.findById(id);
     
