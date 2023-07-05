@@ -7,7 +7,7 @@ require("dotenv/config");
 require('express-async-errors');
 const userRoutes = require("./Routes/userRoutes.js");
 const productRoutes = require("./Routes/productRoutes.js");
-const categoryRoutes = require("./Routes/orderRoutes.js");
+const categoryRoutes = require("./Routes/categoryRoutes.js");
 const orderRoutes = require("./Routes/orderRoutes.js");
 const reviewRoutes = require("./Routes/reviewRoutes.js");
 

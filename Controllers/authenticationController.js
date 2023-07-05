@@ -16,7 +16,7 @@ const jwt = require("jsonwebtoken");
 const getUsers = async (req, res, next) => {
   try {
     // Verify if the requester is an admin
-    const admin = await User.findById(req.userId);
+    const admin = await User.findById(req.id);
     if (admin.role !== "admin") {
       return next(new AppError("Only admins can access user data", 403));
     }
@@ -51,7 +51,7 @@ const signUp = async (req, res, next) => {
   console.log("signUp");
   try {
     console.log(req.body);
-    const { email, username,role , password, confirmPassword} = req.body;
+    const { email, username, role, password, confirmPassword } = req.body;
     console.log(
       "Received user data:",
       email,
@@ -148,7 +148,7 @@ const UserData = async (req, res, next) => {
     // Retrieve user data from the decoded token
     const user = await getUserDataFromToken(decodedToken);
     // user.password = undefined;
-
+    console.log(user);
     // Return the user data and roles in the response
     res.status(200).json({
       user,
@@ -193,7 +193,7 @@ const updatePassword = async (req, res, next) => {
 ////////////////////////////////////////////
 const updateUser = async (req, res, next) => {
   try {
-    const userId = req.userId;
+    const userId = req.id;
     const updatedData = req.body;
 
     const user = await User.findById(userId);
@@ -221,7 +221,7 @@ const deleteUser = async (req, res, next) => {
       );
 
     // Verify if the requester is an admin
-    const admin = await User.findById(req.userId);
+    const admin = await User.findById(req.id);
     if (admin.role !== "admin") {
       return next(new AppError("Only admins can delete users", 403));
     }
@@ -241,7 +241,7 @@ const deleteUser = async (req, res, next) => {
 
 ////////////////////////////
 const Logout = async (req, res, next) => {
-  const idd = req.userId;
+  const idd = req.id;
   console.log(idd);
 
   // Find the user by ID
@@ -264,7 +264,7 @@ const Logout = async (req, res, next) => {
 const setAddress = async (req, res, next) => {
   try {
     const { address } = req.body;
-    const userId = req.userId;
+    const userId = req.id;
 
     // Update the user's address in the database
     const user = await User.findById(userId);

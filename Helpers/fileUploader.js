@@ -17,7 +17,7 @@ const fileUpload = () => {
         limits: {
             fileSize: 1024 * 1024 * 5 // 5MB limit per file (adjust as needed)
         }
-    }).fields([{name:"photo_url",maxCount:7},{name:"details_images",maxCount:2}]) // 'images' is the field name for multiple file uploads, 10 is the maximum number of files
+    }).fields([{name:"photo_url",maxCount:7},{name:"details_images",maxCount:2}])
     
     return upload;
 };

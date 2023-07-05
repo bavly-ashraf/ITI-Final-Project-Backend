@@ -3,8 +3,7 @@ const { Schema } = mongoose;
 
 //Order schema
 const OrderSchema = new Schema({
-  orderItems: 
-  [
+  orderItems: [
     {
       type: mongoose.Schema.Types.ObjectId,
       // required: true,
@@ -47,10 +46,9 @@ const OrderSchema = new Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     // required: true,
-    ref: "User",
+    ref: "Users",
   },
 });
 
 const Order = mongoose.model("Order", OrderSchema);
 module.exports = Order;
-
