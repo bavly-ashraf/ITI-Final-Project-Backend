@@ -16,7 +16,6 @@ router.get('/user/:id', getUserOrder)
 router.post('/',verifyToken, addOrder)
 
 router.delete('/:id',verifyToken, deleteOrder)
-// router.delete('/:id', deletOrder)
 
 
 module.exports = router;
