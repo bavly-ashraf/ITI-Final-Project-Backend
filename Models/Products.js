@@ -8,7 +8,6 @@ const ProductsSchema = new Schema({
     type: String,
     required: [true, "please enter the product name"],
   },
-  details: {
     description: {
       type: String,
       required: [true, "please enter the product description"],
@@ -19,7 +18,6 @@ const ProductsSchema = new Schema({
         required: [true, "please enter at least 1 photo for the product"],
       },
     ],
-    dimensions: {
       height: {
         type: Number,
         required: [true, "please enter height of the product"],
@@ -32,8 +30,6 @@ const ProductsSchema = new Schema({
         type: Number,
         required: [true, "please enter depth of the product"],
       },
-    },
-  },
   price: {
     type: Number,
     required: [true, "please enter the product price"],
