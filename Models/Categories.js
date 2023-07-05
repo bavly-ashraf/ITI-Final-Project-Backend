@@ -7,12 +7,6 @@ const CategoriesSchema = new Schema({
       type: String,
       required: [true, "please enter the product name"],
     },
-    Products: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Products",
-      },
-    ],
   });
 
 
