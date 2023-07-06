@@ -2,7 +2,7 @@ const AppError = require("../Helpers/AppError");
 const User = require("../Models/Users");
 
 const verifyAdmin = async (req, res, next) => {
-  const admin = await User.findById(req.userId);
+  const admin = await User.findById(req.id);
   if (!admin) {
     return next(new AppError("user not found"));
   } else {

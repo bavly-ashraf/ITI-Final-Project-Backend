@@ -1,15 +1,16 @@
 require("dotenv").config();
 const AppError = require("../Helpers/AppError");
 const Products = require("../Models/Products");
+const Review = require("../Models/Reviews");
 const Categories = require("../Models/Categories");
 const cloudinary = require("../Helpers/cloudinary.js");
+const User = require("../Models/Users");
 
 ////////////////////////////////////get methods//////////////////////////////////
 
 //http://localhost:8080/products
 
 const getAllProducts = async (req, res, next) => {
-  
     const { sort } = req.params;
     let products;
     switch (sort) {
@@ -41,8 +42,10 @@ const getProductsBySearch = async(req,res,next)=>{
 
 const getProductById = async (req, res, next) => {
     const { id } = req.params;
-    const product = await Products.findById(id);
-    if (!product) return next(new AppError("Product not found", 404));
+    const product = await Products.findById(id).populate({ path: 'reviews', select: '-__v ', populate: {
+      path: 'userId',
+      select: 'username'} });
+    if (!product) return next(new AppError("Product not found", 404))
     res.status(200).json({ message: "Product retrieved successfully", product });
 };
 
@@ -89,8 +92,9 @@ const getProductsByFilter = async (req, res, next) => {
 
 //http://localhost:8080/products/:category
 const createProduct = async (req, res, next) => {
+    const user = await User.findById(req.id);
+    if (user.role !== "admin") return next(new AppError('unauthorized', 403))
     const {category} = req.params;
-    console.log(req.files);
     const {photo_url,details_images} = req.files;
     if(photo_url.length == 0 || details_images.length == 0) return next(new AppError('please enter at least one image for product and one detailed image',404));
     const { name,description,height,width,depth,price,vendor,no_of_items_in_stock } = req.body;
@@ -124,10 +128,20 @@ const createProduct = async (req, res, next) => {
 //http://localhost:8080/products/:id
 
 const deleteProduct = async(req,res,next)=>{
+  const user = await User.findById(req.id);
+  if (user.role !== "admin") return next(new AppError('unauthorized', 403))
   const {id} = req.params;
   if(!id) return next(new AppError('please enter product id',404));
   const deletedProduct = await Products.findByIdAndDelete(id);
   //delete product review
+  const reviews = await Review.find({productId:id});
+  if(!reviews){}
+  else
+  {
+    for(let i = 0; i<reviews.length;i++){
+      await Review.findByIdAndDelete(reviews[i]._id);
+    }
+  }
   res.status(200).json({message:'success',deletedProduct});
 }
 
@@ -136,6 +150,8 @@ const deleteProduct = async(req,res,next)=>{
 //http://localhost:8080/products/:id
 
 const updateProduct = async(req,res,next)=>{
+    const user = await User.findById(req.id);
+    if (user.role !== "admin") return next(new AppError('unauthorized', 403))
     const {id} = req.params;
     const product = req.body;
     const updatedProduct = await Products.findByIdAndUpdate(id,product,{new:true});

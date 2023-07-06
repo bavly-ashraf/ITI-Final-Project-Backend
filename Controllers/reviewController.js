@@ -21,7 +21,7 @@ const getTopRatedReview =async(req, res, next)=>{
     }).populate({
         path: 'userId',
         select: '_id username city country',
-    }).select('-__v')
+    }).select('-__v').limit(5)
     res.status(200).json({ message: 'success', reviews })
 }
 
@@ -69,14 +69,17 @@ const updateReview = async (req, res, next) => {
 }
 
 const deleteReview = async (req, res, next) => {
-    const foundedreview = await Review.findById(req.params.id).populate('userId').populate('productId')
+    const foundedreview = await Review.findById(req.params.id).populate({
+        path: 'productId',
+        select: '_id name',
+    }).populate({
+        path: 'userId',
+        select: '_id username email role',
+    }).select('-__v')
     if (!foundedreview) return next(new AppError('comment not found or already deleted', 404))
-    const { _id } = foundedreview.userId
     const user = await User.findById(req.id);
-    if (_id.toString() !== req.id.toString() && user.role !== 'admin') return next(new AppError('unauthorized', 403))
+    if (foundedreview.userId._id.toString() !== req.id.toString() && user.role !== 'admin') return next(new AppError('unauthorized', 403))
     const deletedreview = await Review.findByIdAndDelete(req.params.id)
     res.status(200).json({ message: 'success', deletedreview })
 }
-
-// module.exports = { getUserReview, getAllReview, addReview, getPostReview, updateReview, deletReview };
 module.exports = { getUserReview,getTopRatedReview, addReview , getProductReview , getAllReview , updateReview, deleteReview};
