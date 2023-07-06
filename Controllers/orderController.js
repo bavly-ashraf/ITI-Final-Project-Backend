@@ -35,6 +35,18 @@ const addOrder = async (req, res, next) => {
     res.status(201).json({ message: 'success', order });
 }
 
+// Update an order's status by ID
+// const updateOrderStatus = async (orderId, newStatus) => {
+//   try {
+//     const result = await Order.updateOne(
+//       { _id: orderId },
+//       { $set: { status: newStatus } }
+//     );
+//     console.log(result);
+//   } catch (error) {
+//     console.error(error);
+//   }
+// };
 
 
 const getUserOrder = async (req, res, next) => {
@@ -69,4 +81,6 @@ const deleteOrder = async (req, res, next) => {
     res.status(200).json({ message: 'success', deletedorder })
 }
 
-module.exports = {getAllOrders,getOrderById,getUserOrder,addOrder,updateOrder,deleteOrder};
+module.exports = {getAllOrders,getOrderById,getUserOrder,addOrder,updateOrder,deleteOrder,
+    // updateOrderStatus
+};

@@ -14,7 +14,9 @@ router.get('/',verifyToken, getAllOrders)
 router.get('/:id', getOrderById)
 router.get('/user/:id', getUserOrder)
 router.post('/',verifyToken, addOrder)
-router.patch('/:id', verifyToken, updateOrder); 
+// router.patch('/:id', verifyToken, updateOrder); 
 router.delete('/:id',verifyToken, deleteOrder)
+// router.delete('/:id', updateOrderStatus)
+
 
 module.exports = router;
