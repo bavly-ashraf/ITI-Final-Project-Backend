@@ -1,7 +1,6 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-//OrderedItems schema
 const OrderedItemsSchema = new Schema({
 
   quantity: {
@@ -10,10 +9,14 @@ const OrderedItemsSchema = new Schema({
     default:1
   },
   productId: {
-    // type: Number,
+    type: Schema.Types.ObjectId,
+    ref: "Products",
+    required: true,
+  },
+  userId: {
+    type: Schema.Types.ObjectId,
     ref: "Users",
-    // ref:'Products',
-    type: mongoose.Schema.Types.ObjectId,
+    required: true,
   },
 });
 
