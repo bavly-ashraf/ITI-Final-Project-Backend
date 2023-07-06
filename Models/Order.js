@@ -36,6 +36,12 @@ const OrderSchema = new Schema({
     required: true,
     default: "Pending",
   },
+  // status: {
+  //   type: String,
+  //   enum: statusEnum, // add the enum to the status field
+  //   required: true,
+  //   default: "Pending",
+  // },
   dateOfOrder: {
     type: Date,
     default: Date.now,
