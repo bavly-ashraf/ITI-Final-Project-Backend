@@ -15,9 +15,7 @@ const getAllOrders= async (req, res, next) => {
 
 
 const getOrderById = async (req, res, next) => {
-  const foundedOrder = await Order.findById(req.params.id).populate([
-    { path: "userId", select: "_id username" },
-  ]);
+  const foundedOrder = await Order.findById(req.params.id).populate([{ path: "userId", select: "_id username" },]);
   if (!foundedOrder) return next(new AppError("orders not found", 404));
   res.status(200).json({ message: "success", foundedOrder });
 };
@@ -48,28 +46,27 @@ const getUserOrder = async (req, res, next) => {
     res.status(200).json({ message: 'success', userOrders })
 }
 
+const updateOrder = async (req, res, next) => {
+    const { orderItems, Address, city, zip, country, phone, totalPrice } = req.body;
+    const foundedorder = await Order.findById(req.params.id)
+    if (!foundedorder) return next(new AppError('order not found', 404))
+    const user = await User.findById(req.id);
+
+    if (foundedorder.userId.toString() !== req.id.toString() && user.role !== 'admin') return next(new AppError('unauthorized', 403))
+    const updatedorder = await Order.findByIdAndUpdate(req.params.id, {  orderItems, Address, city, zip, country, phone, totalPrice }, { new: true })
+    
+    res.status(201).json({ message: 'success', updatedorder })
+}
 
 const deleteOrder = async (req, res, next) => {
-    const { id } = req.params;
-    const userFromToken = req.id;
-    const user = await User.findById(userFromToken)
-    const foundedOrder = await Order.findById(id);
-    
-    if (!foundedOrder) {
-        return next(new AppError('Order not found', 404));
-    }
-    
-    if (foundedOrder.userId.toString() !== userFromToken && user.role !== 'admin') {
-        return next(new AppError('You are not authorized to delete this order', 403));
-    }
-    
-    try {
-        const deletedOrder = await Order.findByIdAndDelete(id);
-        res.status(200).json({ message: 'success', deletedOrder });
-    } catch (error) {
-        return next(new AppError('Error deleting order', 500));
-    }
-};
+    const foundedorder = await Order.findById(req.params.id).populate('userId')
+    console.log(foundedorder)
+    if (!foundedorder) return next(new AppError('order not found or deleted', 404))
+    const { _id } = foundedorder.userId
+    const user = await User.findById(req.id);
+    if (_id.toString() !== req.id.toString() && user.role !== 'admin') return next(new AppError('unauthorized', 403))
+    const deletedorder = await Order.findByIdAndDelete(req.params.id)
+    res.status(200).json({ message: 'success', deletedorder })
+}
 
-
-module.exports = {getAllOrders,getOrderById,getUserOrder,addOrder,deleteOrder};
+module.exports = {getAllOrders,getOrderById,getUserOrder,addOrder,updateOrder,deleteOrder};

@@ -10,6 +10,7 @@ const productRoutes = require("./Routes/productRoutes.js");
 const categoryRoutes = require("./Routes/categoryRoutes.js");
 const orderRoutes = require("./Routes/orderRoutes.js");
 const reviewRoutes = require("./Routes/reviewRoutes.js");
+const orderedItemsRoutes = require("./Routes/orderedItemsRoutes.js")
 
 app.use(cors());
 app.options("*", cors());
@@ -27,6 +28,7 @@ app.use("/users", userRoutes);
  app.use("/categories",  categoryRoutes);
  app.use("/orders",  orderRoutes);
  app.use("/review", reviewRoutes);
+ app.use("/orderedItems",  orderedItemsRoutes);
 
 
 
