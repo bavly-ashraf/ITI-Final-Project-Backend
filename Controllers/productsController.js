@@ -11,7 +11,6 @@ const User = require("../Models/Users");
 //http://localhost:8080/products
 
 const getAllProducts = async (req, res, next) => {
-  
     const { sort } = req.params;
     let products;
     switch (sort) {
@@ -43,8 +42,10 @@ const getProductsBySearch = async(req,res,next)=>{
 
 const getProductById = async (req, res, next) => {
     const { id } = req.params;
-    const product = await Products.findById(id);
-    if (!product) return next(new AppError("Product not found", 404));
+    const product = await Products.findById(id).populate({ path: 'reviews', select: '-__v ', populate: {
+      path: 'userId',
+      select: 'username'} });
+    if (!product) return next(new AppError("Product not found", 404))
     res.status(200).json({ message: "Product retrieved successfully", product });
 };
 

@@ -90,5 +90,5 @@ UsersSchema.methods.checkPassword = async function (password) {
   return isMatch;
 };
 
-const User = mongoose.model("User", UsersSchema);
+const User = mongoose.model("Users", UsersSchema);
 module.exports = User;

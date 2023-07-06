@@ -9,7 +9,7 @@ const verifyToken = require('../Helpers/tokenAuth');
 
 routes.get('/:sort',getAllProducts);
 
-routes.get('/:id',getProductById);
+routes.get('/product/:id',getProductById);
 
 routes.get('/top/rated',topRatedProducts);
 
