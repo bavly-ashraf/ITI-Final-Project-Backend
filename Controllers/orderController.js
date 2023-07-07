@@ -34,6 +34,42 @@ const addOrder = async (req, res, next) => {
     res.status(201).json({ message: 'success', order });
 }
 
+
+const getUserOrder = async (req, res, next) => {
+
+    const { id } = req.params
+    const userOrders = await Order.find({ userId: id }).populate([{ path: 'userId', select: '_id username email role' }])
+    if(!userOrders) return next(new AppError ('orders not found',404 ) )
+
+    res.status(200).json({ message: 'success', userOrders })
+}
+
+
+const updateOrderStatus = async (req, res, next) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    
+    // Check if user is admin
+    const user = req.user;
+    if (!user || user.role !== 'admin') {
+      return next(new AppError('You are not authorized to perform this action', 401));
+    }
+  
+    const order = await Order.findById(id);
+  
+    if (!order) {
+      return next(new AppError('Order not found', 404));
+    }
+  
+    if (status !== 'pending' && status !== 'confirmed') {
+      return next(new AppError('Invalid status', 400));
+    }
+  
+    order.status = status;
+    await order.save();
+  
+    res.status(200).json({ message: 'success', order });
+  };
 // Update an order's status by ID
 // const updateOrderStatus = async (orderId, newStatus) => {
 //   try {
@@ -48,22 +84,6 @@ const addOrder = async (req, res, next) => {
 // };
 
 
-
-const getUserOrder = async (req, res, next) => {
-  const { id } = req.params;
-  const userOrders = await Order.find({ userId: id }).populate([
-    { path: "userId", select: "_id username email role" },
-  ]);
-  if (!userOrders) return next(new AppError("orders not found", 404));
-
-
-    const { id } = req.params
-    const userOrders = await Order.find({ userId: id }).populate([{ path: 'userId', select: '_id username email role' }])
-    if(!userOrders) return next(new AppError ('orders not found',404 ) )
-
-    res.status(200).json({ message: 'success', userOrders })
-}
-
 const updateOrder = async (req, res, next) => {
     const { orderItems, Address, city, zip, country, phone, totalPrice } = req.body;
     const foundedorder = await Order.findById(req.params.id)
@@ -76,6 +96,7 @@ const updateOrder = async (req, res, next) => {
     res.status(201).json({ message: 'success', updatedorder })
 }
 
+
 const deleteOrder = async (req, res, next) => {
     const foundedorder = await Order.findById(req.params.id).populate('userId')
     console.log(foundedorder)
@@ -87,7 +108,7 @@ const deleteOrder = async (req, res, next) => {
     res.status(200).json({ message: 'success', deletedorder })
 }
 
-module.exports = {getAllOrders,getOrderById,getUserOrder,addOrder,updateOrder,deleteOrder,
+module.exports = {getAllOrders,getOrderById,getUserOrder,addOrder,updateOrderStatus,updateOrder,deleteOrder,
     // updateOrderStatus
 
 };
