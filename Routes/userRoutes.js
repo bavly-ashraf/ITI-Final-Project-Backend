@@ -39,6 +39,4 @@ routes.patch("/update", tokenAuth, updateUser);
 // Delete methods
 routes.delete("/deleteuser", tokenAuth, deleteUser);
 
-
-
 module.exports = routes;
