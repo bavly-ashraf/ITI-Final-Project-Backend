@@ -31,17 +31,16 @@ const OrderSchema = new Schema({
     type: String,
     required: true,
   },
-  status: {
-    type: String,
-    required: true,
-    default: "Pending",
-  },
   // status: {
   //   type: String,
-  //   enum: statusEnum, // add the enum to the status field
   //   required: true,
   //   default: "Pending",
   // },
+  status: {
+    type: String,
+    enum: ['pending', 'confirmed'],
+    default: 'pending'
+  },
   dateOfOrder: {
     type: Date,
     default: Date.now,
