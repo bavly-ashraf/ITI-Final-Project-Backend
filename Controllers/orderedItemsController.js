@@ -5,8 +5,18 @@ const orderedItems = require("../Models/OrderedItems");
 const User = require("../Models/Users");
 
 
-const addOrderItem = async (req, res, next) => {
+const getOrderedItems = async (req, res, next) => {
+  try {
+    const userId = req.id;
+    let orderItem = await orderedItems.find({ userId }).populate("productId");
+    res.status(200).json({ message: "success", orderItem });
+  } catch {
+    return next(new AppError("Something went wrong"));
+  }
+};
 
+
+const addOrderItem = async (req, res, next) => {
   try {
     const { productId, quantity } = req.body;
     const userId = req.id;
@@ -17,15 +27,12 @@ const addOrderItem = async (req, res, next) => {
      else {
      orderItem = new orderedItems({ productId, quantity, userId });
     }
-
     await orderItem.save();
     res.status(200).json({ message: "success", orderItem });
   } catch {
     return next(new AppError("Something went wrong"));
   }
-
 };
-
 
 
 const deleteOrderItem = async (req, res, next) => {
@@ -40,5 +47,7 @@ const deleteOrderItem = async (req, res, next) => {
 }
 
 
-module.exports = { addOrderItem,deleteOrderItem};
+
+
+module.exports = { addOrderItem,deleteOrderItem,getOrderedItems};
 

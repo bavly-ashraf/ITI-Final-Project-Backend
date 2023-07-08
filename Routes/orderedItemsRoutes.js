@@ -8,9 +8,12 @@ const verifyToken = require("../Helpers/tokenAuth");
 
 // //methods[get,post,patch,delete]
 
-const {addOrderItem, deleteOrderItem } = require("../Controllers/orderedItemsController");
+const {addOrderItem, deleteOrderItem ,getOrderedItems} = require("../Controllers/orderedItemsController");
 
-router.post("/",verifyToken,addOrderItem)
+router.get("/",verifyToken, getOrderedItems);
+
+router.post("/",verifyToken,addOrderItem);
+
 router.delete("/:id",verifyToken, deleteOrderItem);
 // router.patch("/:id", updateOrderItemById);
 
