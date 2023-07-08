@@ -1,6 +1,8 @@
 require("dotenv").config();
 const AppError = require("../Helpers/AppError");
 const User = require("../Models/Users");
+const Products = require("../Models/Products");
+
 const bcrypt = require("bcrypt");
 const {
   schema,
@@ -244,6 +246,82 @@ const setAddress = async (req, res, next) => {
     next(error);
   }
 };
+//////////////////////////////All in one method if cound =0 it will renmve the product ,to make it easier instead of using two separate methods
+///there is update too if the count is diffrent
+//        127.0.0.1:3000/users/addtocart
+// {
+//   "productId": "64a86b19bb0571693c055d18",
+//   "count": 5
+// }
+//case 1 if the product exists it will update its count ,if not it will make a new one
+/////////////////
+// {
+//   "productId": "64a86b19bb0571693c055d18",
+//   "count": 0
+// }
+//this will remove the product
+
+const addToCart = async (req, res, next) => {
+  try {
+    const { productId, count } = req.body;
+    const userId = req.id;
+
+    // Find the user by ID
+    const user = await User.findById(userId);
+
+    // Check if the user exists
+    if (!user) {
+      return next(new AppError("User not found", 404));
+    }
+    // productId;
+
+    const productExists = await Products.findById(productId);
+    if (!productExists) {
+      return next(new AppError("Product not found", 404));
+    }
+    // Find the cart item with the matching productId
+    const existingCartItem = user.cart.find(
+      (item) => item.productId.toString() === productId
+    );
+    console.log(existingCartItem);
+    if (count === 0) {
+      // Remove the cart item from the user's cart
+      user.cart = user.cart.filter(
+        (item) => item.productId.toString() !== productId
+      );
+      await user.save();
+
+      return res
+        .status(200)
+        .json({ message: "Product deleted from cart  successfully" });
+    }
+    if (existingCartItem) {
+      // Update the quantity of the existing cart item
+      existingCartItem.quantity = count;
+      await user.save();
+
+      return res.status(200).json({ message: "Qunatity updated" });
+    } else {
+      // Create a new cart item
+      const cartItem = {
+        productId: productId,
+        quantity: count,
+      };
+
+      // Add the cart item to the user's cart
+      user.cart.push(cartItem);
+      await user.save();
+
+      return res
+        .status(200)
+        .json({ message: "Product added to cart successfully" });
+    }
+
+    // Save the user's updated cart
+  } catch (error) {
+    next(error);
+  }
+};
 
 module.exports = {
   getUsers,
@@ -254,6 +332,7 @@ module.exports = {
   deleteUser,
   UserData,
   Logout,
+  addToCart,
   setAddress,
   updateUser,
 };

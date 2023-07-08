@@ -78,6 +78,19 @@ const UsersSchema = new mongoose.Schema({
       ref: "Product",
     },
   ],
+  cart: [
+    {
+      productId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Products",
+        required: true,
+      },
+      quantity: {
+        type: Number,
+        required: true,
+      },
+    },
+  ],
 });
 
 UsersSchema.methods.savePassword = async function (password) {
