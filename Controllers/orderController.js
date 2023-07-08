@@ -24,14 +24,15 @@ const getPendingOrders = async (req, res, next) => {
 };
 
 
+
 const getOrderById = async (req, res, next) => {
   const foundedOrder = await Order.findById(req.params.id).populate([{ path: "userId", select: "_id username" },]);
   if (!foundedOrder) return next(new AppError("orders not found", 404));
   res.status(200).json({ message: "success", foundedOrder });
 };
 
-
 const addOrder = async (req, res, next) => {
+
 
     const { orderItems, Address, city, zip, country, phone, totalPrice } = req.body;
     
@@ -120,3 +121,4 @@ const deleteOrder = async (req, res, next) => {
 }
 
 module.exports = {getAllOrders,getOrderById,getUserOrder,addOrder,updateOrderStatus,updateOrder,deleteOrder,getPendingOrders};
+
