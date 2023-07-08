@@ -18,9 +18,11 @@ routes.get('/:category',getProductsByCategory);
 routes.get('/filter/:sort',getProductsByFilter);
 
 //get products by search
+
 routes.get('/',getProductsBySearch)
 
 //create new product
+
 routes.post('/:category',fileUpload(),verifyToken,createProduct)
 
 //update existing product
