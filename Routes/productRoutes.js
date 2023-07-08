@@ -1,6 +1,6 @@
 const express = require('express');
 const routes = express.Router();
-const {getAllProducts,getProductById,getProductsByCategory,getProductsByFilter, getProductsBySearch, createProduct, deleteProduct, updateProduct, topRatedProducts}=require('../Controllers/productsController');
+const {getAllProducts,getProductById,getProductsByCategory,getProductsByFilter, getProductsBySearch, createProduct, deleteProduct, updateProduct, topRatedProducts,addProductToFav,removeProductfromFav}=require('../Controllers/productsController');
 const fileUpload = require('../Helpers/fileUploader');
 const verifyToken = require('../Helpers/tokenAuth');
 
@@ -24,6 +24,11 @@ routes.get('/',getProductsBySearch)
 routes.post('/:category',fileUpload(),verifyToken,createProduct)
 
 //update existing product
+
+routes.patch('/fav/:id',verifyToken,addProductToFav)
+
+routes.patch('/unfav/:id',verifyToken,removeProductfromFav)
+
 routes.patch('/:id',verifyToken,updateProduct)
 
 //delete product

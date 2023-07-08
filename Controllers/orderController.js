@@ -32,8 +32,6 @@ const getOrderById = async (req, res, next) => {
 };
 
 const addOrder = async (req, res, next) => {
-
-
     const { orderItems, Address, city, zip, country, phone, totalPrice } = req.body;
     
     // Check if user's role is "user"
