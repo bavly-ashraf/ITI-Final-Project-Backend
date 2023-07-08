@@ -12,6 +12,16 @@ const getAllOrders= async (req, res, next) => {
     res.status(200).json({ message: 'success', orders })
 
 }
+const getPendingOrders = async (req, res, next) => {
+  const user = await User.findById(req.id);
+  console.log(user);
+  if (user.role !== "admin") return next(new AppError("unauthorized", 403));
+  const orders = await Order.find({ status: "pending" }) // Filter by status: "pending"
+    .populate([{ path: "userId", select: "_id username role" }])
+    .sort({ dateOfOrder: -1 });
+  
+  res.status(200).json({ message: "success", orders });
+};
 
 
 const getOrderById = async (req, res, next) => {
@@ -51,7 +61,7 @@ const updateOrderStatus = async (req, res, next) => {
     const { status } = req.body;
     
     // Check if user is admin
-    const user = req.user;
+    const user = await User.findById(req.id);
     if (!user || user.role !== 'admin') {
       return next(new AppError('You are not authorized to perform this action', 401));
     }
@@ -109,6 +119,4 @@ const deleteOrder = async (req, res, next) => {
     res.status(200).json({ message: 'success', deletedorder })
 }
 
-module.exports = {getAllOrders,getOrderById,getUserOrder,addOrder,updateOrderStatus,updateOrder,deleteOrder,
-    // updateOrderStatus
-};
+module.exports = {getAllOrders,getOrderById,getUserOrder,addOrder,updateOrderStatus,updateOrder,deleteOrder,getPendingOrders};
