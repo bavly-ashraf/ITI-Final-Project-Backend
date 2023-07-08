@@ -158,6 +158,55 @@ const updateProduct = async(req,res,next)=>{
     res.status(200).json({message:"success",updatedProduct});
 }
 
+//http://localhost:8080/products/fav/:id
+
+const addProductToFav = async(req,res,next)=>{
+  try
+  {
+    const {id} = req.params;
+    const wishList=req.authorizedUser.wishList;
+    if(wishList.includes(id))
+    {
+      res.send("product already in wishlist")
+    }
+    else
+    {
+      wishList.push(id);
+      await req.authorizedUser.save();
+      res.status(200).json({message:"success",wishList});
+    }
+  }
+  catch(err)
+  {
+    return next(err);
+  }
+}
+
+//http://localhost:8080/products/fav/:id
+
+const removeProductfromFav = async(req,res,next)=>{
+  try
+  {
+    const {id} = req.params;
+    let wishList=req.authorizedUser.wishList;
+    if(wishList.includes(id))
+    {
+      wishList=wishList.filter((productId)=>productId!=id)
+      req.authorizedUser.wishList=wishList;
+      await req.authorizedUser.save();
+      res.status(200).json({message:"success",wishList});
+    }
+    else
+    {
+      res.send("product not found")
+    }
+  }
+  catch(err)
+  {
+    return next(err);
+  }
+}
+
 ////////////////////////////////////TopRated method//////////////////////////////////
 
 //http://localhost:8080/products/:id
@@ -193,7 +242,7 @@ const topRatedProducts = async (req, res, next) => {
 }
 
 
-module.exports = { getAllProducts, topRatedProducts ,getProductById,getProductsByCategory,getProductsByFilter,getProductsBySearch,createProduct,deleteProduct,updateProduct};
+module.exports = { getAllProducts, topRatedProducts ,getProductById,getProductsByCategory,getProductsByFilter,getProductsBySearch,createProduct,deleteProduct,updateProduct,addProductToFav,removeProductfromFav};
 
 
 // const details =  {
