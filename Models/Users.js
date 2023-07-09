@@ -63,7 +63,7 @@ const UsersSchema = new mongoose.Schema({
   wishList: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Ordered Items",
+      ref: "Products",
     },
   ],
   reviewId: [
