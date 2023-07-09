@@ -95,7 +95,8 @@ const login = async (req, res, next) => {
 
 const getUserDataFromToken = async (decodedToken) => {
   const userId = decodedToken.id;
-  const user = await User.findById(userId);
+  // const user = await User.findById(userId);
+  const user = await User.findById(userId).populate({path:"wishList",select:"_id name photo_url"});
   return user;
 };
 
