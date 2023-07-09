@@ -11,13 +11,13 @@ const verifyToken = require("../Helpers/tokenAuth");
 const { getAllOrders,getOrderById,getUserOrder,addOrder,updateOrder,deleteOrder,updateOrderStatus,getPendingOrders} = require('../Controllers/orderController');
 
 router.get('/',verifyToken, getAllOrders)
+router.get('/pending/',verifyToken, getPendingOrders)
 router.get('/:id', getOrderById)
 router.get('/user/:id', getUserOrder)
 router.post('/',verifyToken, addOrder)
 router.patch('/:id', verifyToken, updateOrder); 
 router.delete('/:id',verifyToken, deleteOrder)
 router.patch('/confirm/:id',verifyToken, updateOrderStatus)
-router.get('/pending/',verifyToken, getPendingOrders)
 
 
 module.exports = router;

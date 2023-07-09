@@ -63,7 +63,7 @@ const UsersSchema = new mongoose.Schema({
   wishList: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Ordered Items",
+      ref: "Products",
     },
   ],
   reviewId: [
@@ -78,8 +78,29 @@ const UsersSchema = new mongoose.Schema({
       ref: "Product",
     },
   ],
+  cart: [
+    {
+      productId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Products",
+        required: true,
+      },
+      quantity: {
+        type: Number,
+        required: true,
+      },
+    },
+  ],
 });
+UsersSchema.pre("findOne", function (next) {
+  this.populate("wishList", "_id name photo_url");
 
+  next();
+});
+UsersSchema.pre("findOne", function (next) {
+  this.populate("cart.productId", "_id name photo_url");
+  next();
+});
 UsersSchema.methods.savePassword = async function (password) {
   const hashed_password = await bcrypt.hash(password);
   this.password = hashed_password;

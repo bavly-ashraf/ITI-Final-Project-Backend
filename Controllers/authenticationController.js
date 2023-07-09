@@ -1,12 +1,10 @@
 require("dotenv").config();
 const AppError = require("../Helpers/AppError");
 const User = require("../Models/Users");
+const Products = require("../Models/Products");
+
 const bcrypt = require("bcrypt");
-const {
-  schema,
-  verifySignUp,
-  passwordSchema,
-} = require("../Helpers/validationSchema");
+const { passwordSchema } = require("../Helpers/validationSchema");
 const jwt = require("jsonwebtoken");
 
 ////////////////////////////////////get methods//////////////////////////////////
@@ -17,11 +15,10 @@ const getUsers = async (req, res, next) => {
   try {
     // Verify if the requester is an admin
     const admin = await User.findById(req.id);
-    if (admin.role !== "admin") {
+    if (admin.role !== "admin")
       return next(new AppError("Only admins can access user data", 403));
-    }
     const users = await User.find({}, "-password"); // Exclude the password field from the response
-    res.send(users);
+    res.status(200).send(users);
   } catch (error) {
     return next(error);
   }
@@ -31,10 +28,8 @@ const getUsers = async (req, res, next) => {
 const getUsersById = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
-    if (!user) {
-      return next(new AppError("User not found", 404));
-    }
-    res.send(user);
+    if (!user) return next(new AppError("User not found", 404));
+    res.status(200).send(user);
   } catch (error) {
     return next(error);
   }
@@ -42,27 +37,12 @@ const getUsersById = async (req, res, next) => {
 ////////////////////////////////////post methods//////////////////////////////////
 //http://localhost:8080/users/signup
 const signUp = async (req, res, next) => {
-  console.log("signUp");
   try {
-    // console.log(req.body);
     const { email, username, role, password, confirmPassword } = req.body;
-    console.log(
-      "Received user data:",
-      email,
-      username,
-      role,
-      password,
-      confirmPassword
-    );
-    if (!email || !username || !password || !confirmPassword) {
-      // console.log("Missing required info");
+    if (!email || !username || !password || !confirmPassword)
       return next(new AppError("Please enter the required info"));
-    }
     const user = await User.findOne({ email });
-    if (user) {
-      console.log("User email already exists");
-      return next(new AppError("User email already exists"));
-    }
+    if (user) return next(new AppError("User email already exists"));
     const hashed_password = await bcrypt.hash(password, 10);
     const newUser = new User({
       email,
@@ -81,13 +61,10 @@ const signUp = async (req, res, next) => {
       process.env.JWT_SECRET
     );
     newUser.password = undefined;
-    res.send({ newUser, token });
-    // console.log("User signed up successfully");
+    res.status(201).json({ newUser, token });
   } catch (error) {
-    console.log("Error occurred during signup:", error);
     next(error);
   }
-  console.log("End of signUp");
 };
 //////////////////////Login////////////////////
 //http://localhost:3000/users/login
@@ -112,7 +89,6 @@ const login = async (req, res, next) => {
   user.isLogged = true;
   await user.save();
   user.password = undefined;
-  // res.status(201).json({ roles: ["admin"], message: "sucess", user, token });
   res.status(201).json({ message: "sucess", user, token });
 };
 
@@ -126,7 +102,6 @@ const UserData = async (req, res, next) => {
   try {
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
     const user = await getUserDataFromToken(decodedToken);
-    // user.password = undefined;
     res.status(200).json({
       user,
       token,
@@ -145,11 +120,11 @@ const updatePassword = async (req, res, next) => {
   try {
     const { email, password, newPassword, newPassword_confirm } = req.body;
     if (!email || !password || !newPassword || !newPassword_confirm)
-      return next(new AppError("Please enter the required info"));
+      return next(new AppError("Please enter the required info", 404));
     const user = await User.findOne({ email: email });
-    if (!user) return next(new AppError("user does not exist"));
+    if (!user) return next(new AppError("user does not exist", 404));
     const isMatch = await user.checkPassword(password);
-    if (!isMatch) return next(new AppError("wrong password"));
+    if (!isMatch) return next(new AppError("wrong password", 404));
     try {
       await passwordSchema.validateAsync({
         password: newPassword,
@@ -165,6 +140,7 @@ const updatePassword = async (req, res, next) => {
     return next(error);
   }
 };
+
 ////////////////////////////////////////////
 const updateUser = async (req, res, next) => {
   try {
@@ -187,16 +163,18 @@ const deleteUser = async (req, res, next) => {
     const { userId } = req.body;
     if (!userId)
       return next(
-        new AppError("Please provide the ID of the user you want to delete")
+        new AppError(
+          "Please provide the ID of the user you want to delete",
+          404
+        )
       );
     // Verify if the requester is an admin
     const admin = await User.findById(req.id);
     if (admin.role !== "admin")
       return next(new AppError("Only admins can delete users", 403));
     const user = await User.findById(userId);
-    if (!user) return next(new AppError("User does not exist"));
+    if (!user) return next(new AppError("User does not exist"), 404);
     await User.deleteOne({ _id: userId });
-
     //     await Orders.deleteMany({ userId: user._id });
     //     await Review.deleteMany({ userId: user._id });
     res.send("User removed");
@@ -210,9 +188,7 @@ const Logout = async (req, res, next) => {
   const idd = req.id;
   // Find the user by ID
   const user = await User.findById(idd); // Assuming you have a User model
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
-  }
+  if (!user) return next(new AppError("user not found", 404));
   user.isLogged = false;
   await user.save();
   res.status(200).json({ message: "Logout successful" });
@@ -229,17 +205,85 @@ const setAddress = async (req, res, next) => {
     if (!user) return next(new AppError("User not found", 404));
 
     // Update the user's address fields with the new values
-    user.address.apartment = address.apartment;
-    user.address.floor = address.floor;
-    user.address.buildingNo = address.buildingNo;
-    user.address.street = address.street;
-    user.address.zip = address.zip;
-    user.address.city = address.city;
-    user.address.country = address.country;
-
+    const { apartment, floor, buildingNo, street, zip, city, country } =
+      user.address;
+    apartment = address.apartment;
+    floor = address.floor;
+    buildingNo = address.buildingNo;
+    street = address.street;
+    zip = address.zip;
+    city = address.city;
+    country = address.country;
     await user.save();
-
     res.status(200).json({ message: "Address updated successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+//////////////////////////////All in one method if cound =0 it will renmve the product ,to make it easier instead of using two separate methods
+///there is update too if the count is diffrent
+//        127.0.0.1:3000/users/addtocart
+// {
+//   "productId": "64a86b19bb0571693c055d18",
+//   "count": 5
+// }
+//case 1 if the product exists it will update its count ,if not it will make a new one
+/////////////////
+// {
+//   "productId": "64a86b19bb0571693c055d18",
+//   "count": 0
+// }
+//this will remove the product
+
+const addToCart = async (req, res, next) => {
+  try {
+    const { productId, count } = req.body;
+    const userId = req.id;
+    // Find the user by ID
+    const user = await User.findById(userId);
+    // Check if the user exists
+    if (!user) return next(new AppError("User not found", 404));
+    // productId;
+    const productExists = await Products.findById(productId);
+    if (!productExists) return next(new AppError("Product not found", 404));
+    // Find the cart item with the matching productId
+    const existingCartItem = user.cart.find(
+      (item) => item.productId.toString() === productId
+    );
+    if (count === 0) {
+      // Remove the cart item from the user's cart
+      user.cart = user.cart.filter(
+        (item) => item.productId.toString() !== productId
+      );
+      await user.save();
+
+      return res
+        .status(200)
+        .json({ message: "Product deleted from cart  successfully" });
+    }
+    if (existingCartItem) {
+      // Update the quantity of the existing cart item
+      existingCartItem.quantity = count;
+      await user.save();
+
+      return res.status(200).json({ message: "Qunatity updated" });
+    } else {
+      // Create a new cart item
+      const cartItem = {
+        productId: productId,
+        quantity: count,
+      };
+
+      // Add the cart item to the user's cart
+      user.cart.push(cartItem);
+      await user.save();
+
+      return res
+        .status(200)
+        .json({ message: "Product added to cart successfully" });
+    }
+
+    // Save the user's updated cart
   } catch (error) {
     next(error);
   }
@@ -254,6 +298,7 @@ module.exports = {
   deleteUser,
   UserData,
   Logout,
+  addToCart,
   setAddress,
   updateUser,
 };
