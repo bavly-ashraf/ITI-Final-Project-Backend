@@ -92,7 +92,15 @@ const UsersSchema = new mongoose.Schema({
     },
   ],
 });
+UsersSchema.pre("findOne", function (next) {
+  this.populate("wishList", "_id name photo_url");
 
+  next();
+});
+UsersSchema.pre("findOne", function (next) {
+  this.populate("cart.productId", "_id name photo_url");
+  next();
+});
 UsersSchema.methods.savePassword = async function (password) {
   const hashed_password = await bcrypt.hash(password);
   this.password = hashed_password;
