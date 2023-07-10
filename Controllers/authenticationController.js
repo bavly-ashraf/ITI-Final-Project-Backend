@@ -2,6 +2,7 @@ require("dotenv").config();
 const AppError = require("../Helpers/AppError");
 const User = require("../Models/Users");
 const Products = require("../Models/Products");
+const { sendVerificationEmail } = require("../Services/sendVerificationEmail");
 
 const bcrypt = require("bcrypt");
 const { passwordSchema } = require("../Helpers/validationSchema");
@@ -36,21 +37,186 @@ const getUsersById = async (req, res, next) => {
 };
 ////////////////////////////////////post methods//////////////////////////////////
 //http://localhost:8080/users/signup
+// const signUp = async (req, res, next) => {
+//   try {
+//     const { email, username, role, password, confirmPassword } = req.body;
+//     if (!email || !username || !password || !confirmPassword)
+//       return next(new AppError("Please enter the required info"));
+//     const user = await User.findOne({ email });
+//     if (user) return next(new AppError("User email already exists"));
+//     const hashed_password = await bcrypt.hash(password, 10);
+//     const newUser = new User({
+//       email,
+//       role,
+//       username,
+//       password: hashed_password,
+//     });
+//     await newUser.save();
+//     const token = jwt.sign(
+//       {
+//         id: newUser._id,
+//         user: newUser.email,
+//         roles: newUser.role,
+//         isLogged: newUser.isLogged,
+//       },
+//       process.env.JWT_SECRET
+//     );
+//     newUser.password = undefined;
+//     res.status(201).json({ newUser, token });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+//////////////////////////////////////////////
+// const verifyEmail = async (req, res, next) => {
+//   try {
+//     const { email, verificationCode } = req.body;
+//     const user = await User.findOne({ email });
+//     if (!user) return next(new AppError("User not found", 404));
+//     if (user.verification.code !== verificationCode) {
+//       return res.status(400).json({ message: "Invalid verification code" });
+//     }
+//     // Mark the email as verified
+//     user.verification.verified = true;
+//     await user.save();
+//     res.status(200).json({ message: "Email verified successfully" });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+// const generateVerificationCode = () => {
+//   const code = Math.random().toString(36).substring(2, 8); // Generate a random alphanumeric code
+//   return code;
+// };
+// const signUp = async (req, res, next) => {
+//   try {
+//     const { email, username, role, password, confirmPassword } = req.body;
+//     if (!email || !username || !password || !confirmPassword)
+//       return next(new AppError("Please enter the required info"));
+
+//     const user = await User.findOne({ email });
+//     if (user) return next(new AppError("User email already exists"));
+
+//     const hashed_password = await bcrypt.hash(password, 10);
+
+//     const verificationCode = generateVerificationCode(); // Generate a verification code
+
+//     const newUser = new User({
+//       email,
+//       role,
+//       username,
+//       password: hashed_password,
+//       verification: {
+//         code: verificationCode,
+//         verified: false,
+//       },
+//     });
+
+//     await newUser.save();
+
+//     const token = jwt.sign(
+//       {
+//         id: newUser._id,
+//         user: newUser.email,
+//         roles: newUser.role,
+//         isLogged: newUser.isLogged,
+//       },
+//       process.env.JWT_SECRET
+//     );
+
+//     newUser.password = undefined;
+//     res.status(201).json({ newUser, token });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+// const verifyEmail = async (req, res, next) => {
+//   try {
+//     console.log("verufy enau");
+//     const { email, Verification_code } = req.body;
+
+//     const user = await User.findOne({ email });
+
+//     // if (!user) return res.status(404).json({ message: "User not found" });
+//     if (!user) return next(new AppError("User not found", 403));
+
+//     if (user.verification.code !== Verification_code) {
+//       return res.status(400).json({ message: "Invalid verification code" });
+//     }
+
+//     console.log("dwadw");
+//     // Mark the email as verified
+//     user.verification.verified = true;
+//     await user.save();
+//     res.status(200).json({ message: "Email verified successfully" });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+const verifyEmail = async (req, res, next) => {
+  try {
+    console.log("verify email");
+    const { email, Verification_code } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return next(new AppError("User not found", 404));
+    }
+
+    if (user.verification.code !== Verification_code) {
+      return next(new AppError("Invalid verification code", 400));
+    }
+
+    user.verification.verified = true;
+    await user.save();
+
+    res.status(200).json({ message: "Email verified successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const generateVerificationCode = () => {
+  const code = Math.random().toString(36).substring(2, 8); // Generate a random alphanumeric code
+  return code;
+};
+
 const signUp = async (req, res, next) => {
   try {
-    const { email, username, role, password, confirmPassword } = req.body;
+    const { email, username, password, confirmPassword } = req.body;
     if (!email || !username || !password || !confirmPassword)
-      return next(new AppError("Please enter the required info"));
+      return res
+        .status(400)
+        .json({ message: "Please enter the required info" });
+
     const user = await User.findOne({ email });
-    if (user) return next(new AppError("User email already exists"));
+    console.log(user);
+    if (user)
+      return res.status(400).json({ message: "User email already exists" });
+    console.log("hello world23232");
+
     const hashed_password = await bcrypt.hash(password, 10);
+
+    const verificationCode = generateVerificationCode(); // Generate a verification code
+
     const newUser = new User({
       email,
-      role,
       username,
       password: hashed_password,
+      verification: {
+        code: verificationCode,
+        verified: false,
+      },
     });
+
     await newUser.save();
+
+    // Send the verification email
+    console.log("hello world");
+
+    await sendVerificationEmail(email, verificationCode);
+
     const token = jwt.sign(
       {
         id: newUser._id,
@@ -60,12 +226,14 @@ const signUp = async (req, res, next) => {
       },
       process.env.JWT_SECRET
     );
+
     newUser.password = undefined;
     res.status(201).json({ newUser, token });
   } catch (error) {
     next(error);
   }
 };
+
 //////////////////////Login////////////////////
 //http://localhost:3000/users/login
 
@@ -73,6 +241,10 @@ const login = async (req, res, next) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email: email });
   if (!user) return next(new AppError("Email or Passwrods isnt correct", 403));
+  console.log(user.verification.verified);
+  if (user.verification.verified == false)
+    return next(new AppError("please verify your account", 403));
+
   const token = jwt.sign(
     {
       id: user._id,
@@ -301,4 +473,5 @@ module.exports = {
   addToCart,
   setAddress,
   updateUser,
+  verifyEmail,
 };

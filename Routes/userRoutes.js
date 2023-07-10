@@ -20,6 +20,7 @@ const {
   setAddress,
   updateUser,
   addToCart,
+  verifyEmail,
   uploadFile,
 } = authenticationController;
 
@@ -34,6 +35,7 @@ routes.post("/userData", UserData);
 routes.post("/logout", verifyToken, Logout);
 routes.post("/setadress", verifyToken, setAddress);
 routes.post("/addtocart", verifyToken, addToCart);
+routes.post("/verifyemail", verifyEmail);
 
 // Patch methods
 routes.patch("/update", tokenAuth, updateUser);
