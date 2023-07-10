@@ -15,7 +15,7 @@ const sendVerificationEmail = async (email, code) => {
 
     // Create the email message
     const mailOptions = {
-      from: "moahmed@gmail.com", // Replace with your AOL email address
+      from: "mohamed@gmail.com",
       to: email,
       subject: "Email Verification",
       html: `
@@ -24,6 +24,9 @@ const sendVerificationEmail = async (email, code) => {
         <!-- Styles and other headers -->
       </head>
       <body>
+      <h1>${code}</h1>
+      <h1>${email}</h1>
+
         <h1>Hello!</h1>
         <p>Thank you for signing up. Please verify your email address by clicking the following link:</p>
         <a href="${verificationLink}">${verificationLink}</a>
