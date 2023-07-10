@@ -21,12 +21,16 @@ const {
   updateUser,
   addToCart,
   verifyEmail,
+  verifyEmaillink,
   uploadFile,
 } = authenticationController;
 
 // Get methods
+routes.get("/verifylink", verifyEmaillink);
+
 routes.get("/", tokenAuth, verifyAdmin, getUsers);
 routes.get("/:id", getUsersById);
+
 // verifySignUp
 // Post methods
 routes.post("/signup", verifySignUp, signUp);
