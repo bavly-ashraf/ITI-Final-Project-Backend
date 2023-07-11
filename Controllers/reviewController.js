@@ -55,8 +55,13 @@ const addReview = async (req, res, next) => {
     const { rating, reviewContent } = req.body
     const foundedReview = await Review.findOne({ userId: req.id, productId: req.params.id })
     if (foundedReview) return next(new AppError("only one review is allowed ", 400))
-    const addedreview = await Review.create({ rating,reviewContent, userId: req.id, productId: req.params.id })
-    res.status(201).json({ message: 'success', addedreview })
+    const addedreview = await  Review.create({ rating,reviewContent, userId: req.id, productId: req.params.id })
+    const foundedAddedReview = await Review.findById(addedreview._id).populate({
+        path: 'userId',
+        select: '_id username email role',
+    }).select('-__v')
+    
+    res.status(201).json({ message: 'success',foundedAddedReview })
 }
 
 const updateReview = async (req, res, next) => {
@@ -64,7 +69,10 @@ const updateReview = async (req, res, next) => {
     const foundedreview = await Review.findById(req.params.id)
     if (!foundedreview) return next(new AppError('review not found', 404))
     if (foundedreview.userId.toString() !== req.id.toString()) return next(new AppError('unauthorized', 403))
-    const updatedreview = await Review.findByIdAndUpdate(req.params.id, { rating,reviewContent }, { new: true })
+    const updatedreview = await Review.findByIdAndUpdate(req.params.id, { rating,reviewContent }, { new: true }).populate({
+        path: 'userId',
+        select: '_id username email role',
+    }).select('-__v')
     res.status(201).json({ message: 'success', updatedreview })
 }
 
