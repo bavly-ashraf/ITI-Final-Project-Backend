@@ -20,12 +20,21 @@ const {
   setAddress,
   updateUser,
   addToCart,
-  getUserbyToken,
+
+  verifyEmail,
+  verifyEmaillink,
+    getUserbyToken,
+
+
   uploadFile,
 } = authenticationController;
 
 // Get methods
+
+// routes.get("/verifylink", verifyEmaillink);
+
 routes.get("/getuser", verifyToken, getUserbyToken);
+
 
 routes.get("/", tokenAuth, verifyAdmin, getUsers);
 routes.get("/:id", getUsersById);
@@ -38,6 +47,7 @@ routes.post("/userData", UserData);
 routes.post("/logout", verifyToken, Logout);
 routes.post("/setadress", verifyToken, setAddress);
 routes.post("/addtocart", verifyToken, addToCart);
+routes.post("/verifyemail", verifyEmail);
 
 // Patch methods
 routes.patch("/update", tokenAuth, updateUser);

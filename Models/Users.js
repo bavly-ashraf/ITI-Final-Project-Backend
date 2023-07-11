@@ -78,6 +78,16 @@ const UsersSchema = new mongoose.Schema({
       ref: "Product",
     },
   ],
+  verification: {
+    code: {
+      type: String,
+      required: true,
+    },
+    verified: {
+      type: Boolean,
+      default: false,
+    },
+  },
   cart: [
     {
       productId: {
