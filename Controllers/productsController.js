@@ -165,16 +165,20 @@ const addProductToFav = async(req,res,next)=>{
   {
     const {id} = req.params;
     const wishList=req.authorizedUser.wishList;
-    if(wishList.includes(id))
-    {
-      res.send("product already in wishlist")
-    }
-    else
-    {
+    const newWishList = wishList.filter((product)=>product._id==id)
+    if(newWishList.length > 0) return next(new AppError("product already in wishlist",400));
+    const product = await Products.findById(id);
+    if(!product) return next(new AppError("product is not in database",404))
+    //if(wishList.includes(id))
+    //{
+    //  res.send("product already in wishlist")
+    //}
+    //else
+    //{
       wishList.push(id);
       await req.authorizedUser.save();
       res.status(200).json({message:"success",wishList});
-    }
+    //}
   }
   catch(err)
   {
@@ -182,25 +186,23 @@ const addProductToFav = async(req,res,next)=>{
   }
 }
 
-//http://localhost:8080/products/fav/:id
+//http://localhost:8080/products/unfav/:id
 
 const removeProductfromFav = async(req,res,next)=>{
   try
   {
     const {id} = req.params;
     let wishList=req.authorizedUser.wishList;
-    if(wishList.includes(id))
-    {
-      wishList=wishList.filter((productId)=>productId!=id)
-      req.authorizedUser.wishList=wishList;
+    const verifyWishList = wishList.filter((product)=>product._id!=id)
+    if(wishList.length == verifyWishList.length) return next(new AppError("product not found",404));
+    const newWishList = [];
+    for(let i =0;i<verifyWishList.length;i++){
+    	newWishList.push(verifyWishList[i]._id);
+    }
+      req.authorizedUser.wishList=newWishList;
       await req.authorizedUser.save();
-      res.status(200).json({message:"success",wishList});
+      res.status(200).json({message:"success",newWishList});
     }
-    else
-    {
-      res.send("product not found")
-    }
-  }
   catch(err)
   {
     return next(err);

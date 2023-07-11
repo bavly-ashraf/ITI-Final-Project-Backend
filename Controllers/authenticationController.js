@@ -35,6 +35,18 @@ const getUsersById = async (req, res, next) => {
     return next(error);
   }
 };
+//////////////////////////////////////////
+//http://localhost:8080/users/getuser
+
+const getUserbyToken = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.id);
+    if (!user) return next(new AppError("User not found", 404));
+    res.status(200).send(user);
+  } catch (error) {
+    return next(error);
+  }
+};
 ////////////////////////////////////post methods//////////////////////////////////
 
 const verifyEmail = async (req, res, next) => {
@@ -387,6 +399,10 @@ module.exports = {
   addToCart,
   setAddress,
   updateUser,
+
   verifyEmail,
   verifyEmaillink,
+
+  getUserbyToken,
+
 };
