@@ -36,38 +36,6 @@ const getUsersById = async (req, res, next) => {
   }
 };
 ////////////////////////////////////post methods//////////////////////////////////
-//http://localhost:8080/users/signup
-// const signUp = async (req, res, next) => {
-//   try {
-//     const { email, username, role, password, confirmPassword } = req.body;
-//     if (!email || !username || !password || !confirmPassword)
-//       return next(new AppError("Please enter the required info"));
-//     const user = await User.findOne({ email });
-//     if (user) return next(new AppError("User email already exists"));
-//     const hashed_password = await bcrypt.hash(password, 10);
-//     const newUser = new User({
-//       email,
-//       role,
-//       username,
-//       password: hashed_password,
-//     });
-//     await newUser.save();
-//     const token = jwt.sign(
-//       {
-//         id: newUser._id,
-//         user: newUser.email,
-//         roles: newUser.role,
-//         isLogged: newUser.isLogged,
-//       },
-//       process.env.JWT_SECRET
-//     );
-//     newUser.password = undefined;
-//     res.status(201).json({ newUser, token });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
-//////////////////////////////////////////////
 
 const verifyEmail = async (req, res, next) => {
   try {
@@ -152,7 +120,7 @@ const signUp = async (req, res, next) => {
 };
 ///////////////////////////////
 //http://localhost:3000/users/verifylink?email=mohamed17nasserx@gmail.com&code=4u9yzu
-[];
+
 const verifyEmaillink = async (req, res, next) => {
   try {
     console.log("wdwdw");
