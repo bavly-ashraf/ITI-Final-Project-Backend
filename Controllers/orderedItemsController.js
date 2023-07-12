@@ -28,6 +28,7 @@ const addOrderItem = async (req, res, next) => {
      orderItem = new orderedItems({ productId, quantity, userId });
     }
     await orderItem.save();
+    await orderItem.populate("productId");
     res.status(200).json({ message: "success", orderItem });
   } catch {
     return next(new AppError("Something went wrong"));
