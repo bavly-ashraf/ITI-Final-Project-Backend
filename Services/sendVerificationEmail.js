@@ -53,5 +53,47 @@ const sendVerificationEmail = async (email, code) => {
     console.error("Error sending verification email:", error);
   }
 };
+const sendPasswordResetEmail = async (email, code) => {
+  const resetLink = `http://localhost:5173/resetpassword`;
 
-module.exports = { sendVerificationEmail };
+  try {
+    const mailOptions = {
+      from: "moahmed@gmail.com",
+      to: email,
+      subject: "Password Reset",
+      html: `
+      <html>
+        <head>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              color: #333;
+            }
+            h1 {
+              color: #e9672b;
+            }
+            p {
+              line-height: 1.5;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>Password Reset</h1>
+          <p>You have requested to reset your password. Please use the following code and click the link below to reset your password:</p>
+          <h2>${code}</h2>
+          <a href="${resetLink}">Reset Password</a>
+          <p>If you did not request a password reset, please ignore this email.</p>
+        </body>
+      </html>
+    `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Password reset email sent:", info.messageId);
+    console.log("Preview URL:", nodemailer.getTestMessageUrl(info));
+  } catch (error) {
+    console.error("Error sending password reset email:", error);
+  }
+};
+
+module.exports = { sendVerificationEmail, sendPasswordResetEmail };

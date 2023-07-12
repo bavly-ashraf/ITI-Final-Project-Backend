@@ -2,7 +2,10 @@ require("dotenv").config();
 const AppError = require("../Helpers/AppError");
 const User = require("../Models/Users");
 const Products = require("../Models/Products");
-const { sendVerificationEmail } = require("../Services/sendVerificationEmail");
+const {
+  sendVerificationEmail,
+  sendPasswordResetEmail,
+} = require("../Services/sendVerificationEmail");
 
 const bcrypt = require("bcrypt");
 const { passwordSchema } = require("../Helpers/validationSchema");
@@ -131,34 +134,6 @@ const signUp = async (req, res, next) => {
   }
 };
 ///////////////////////////////
-//http://localhost:3000/users/verifylink?email=mohamed17nasserx@gmail.com&code=4u9yzu
-
-const verifyEmaillink = async (req, res, next) => {
-  try {
-    console.log("wdwdw");
-    const { email, code } = req.query;
-
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return next(new AppError("User not found", 404));
-    }
-
-    if (user.verification.code !== code) {
-      return next(new AppError("Invalid verification code", 400));
-    }
-    console.log(user);
-    console.log("Email:", email);
-    console.log("Verification Code:", code);
-    user.verification.verified = true;
-    // user.verification.code = null; // Clear the verification code
-    await user.save();
-
-    // res.redirect("/verification-success"); // Redirect to a success page
-  } catch (error) {
-    next(error);
-  }
-};
 
 //////////////////////Login////////////////////
 //http://localhost:3000/users/login
@@ -236,6 +211,57 @@ const updatePassword = async (req, res, next) => {
     res.send(user);
   } catch (error) {
     return next(error);
+  }
+};
+////////////////////////
+
+const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    console.log(email);
+    // Check if the user exists in the database
+    const user = await User.findOne({ email });
+    if (!user) {
+      return next(new AppError("User not found", 404));
+    }
+
+    const resetCode = generateVerificationCode(); // Generate a password reset code
+    user.verification.code = resetCode; // Store the reset code in the user's record
+    await user.save();
+    console.log(email, resetCode); //
+    // Send the password reset email
+    await sendPasswordResetEmail(email, resetCode); // You can reuse the existing email sending function
+    console.log("hello");
+    res.status(200).json({ message: "Password reset email sent" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const resetPassword = async (req, res, next) => {
+  try {
+    const { email, password, Verification_code } = req.body;
+    console.log(email, password, Verification_code);
+    // Check if the user exists in the database
+    const user = await User.findOne({ email });
+    if (!user) {
+      return next(new AppError("User not found", 404));
+    }
+    console.log(user);
+    // Check if the reset code matches the one stored in the user's record
+    if (user.verification.code !== Verification_code) {
+      return next(new AppError("Invalid reset code", 400));
+    }
+
+    // Reset the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+    user.resetPasswordCode = undefined; // Clear the reset code
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successful" });
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -372,7 +398,6 @@ const addToCart = async (req, res, next) => {
         quantity: count,
       };
 
-      // Add the cart item to the user's cart
       user.cart.push(cartItem);
       await user.save();
 
@@ -399,10 +424,8 @@ module.exports = {
   addToCart,
   setAddress,
   updateUser,
-
+  forgotPassword,
   verifyEmail,
-  verifyEmaillink,
-
+  resetPassword,
   getUserbyToken,
-
 };
