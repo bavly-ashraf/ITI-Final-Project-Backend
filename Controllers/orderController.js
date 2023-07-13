@@ -42,8 +42,6 @@ const addOrder = async (req, res, next) => {
     return next(new AppError("Only users can create orders.", 403));
   }
 
-  console.log(orderItems);
-
   const order = await Order.create({
     orderItems: orderItems._id,
     Address: address,
@@ -54,6 +52,8 @@ const addOrder = async (req, res, next) => {
     totalPrice,
     userId: req.id,
   });
+
+  orderItems.forEach(async(item)=> await OrderedItems.findByIdAndDelete(item._id))
 
   res.status(201).json({ message: "success", order });
 
