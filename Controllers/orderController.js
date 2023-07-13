@@ -1,6 +1,7 @@
 require("dotenv").config();
 const AppError = require("../Helpers/AppError");
 const Order = require("../Models/Order");
+const orderedItems = require("../Models/OrderedItems");
 const User = require("../Models/Users");
 const OrderedItems = require("../Models/OrderedItems");
 
@@ -33,18 +34,31 @@ const getOrderById = async (req, res, next) => {
 };
 
 const addOrder = async (req, res, next) => {
-    const { orderItems, address, city, zip, country, phone, totalPrice } = req.body;
-    
-    // Check if user's role is "user"
-    const user = await User.findById(req.id);
-    if (!user || user.role !== 'user') {
-        return next(new AppError('Only users can create orders.', 403));
-    }
-    
-    const order = await Order.create({ orderItems, Address:address, city, zip, country, phone, totalPrice, userId:req.id });
-    orderItems.forEach(async(item)=> await OrderedItems.findByIdAndDelete(item));
-    res.status(201).json({ message: 'success', order });
-}
+  const { address, city, zip, country, phone, totalPrice } = req.body;
+  console.log(req.body); // Check if user's role is "user"
+  const user = await User.findById(req.id);
+  const orderItems = await orderedItems.find({ userId: req.id });
+  if (!user || user.role !== "user") {
+    return next(new AppError("Only users can create orders.", 403));
+  }
+
+  console.log(orderItems);
+
+  const order = await Order.create({
+    orderItems: orderItems._id,
+    Address: address,
+    city,
+    zip,
+    country,
+    phone,
+    totalPrice,
+    userId: req.id,
+  });
+
+  res.status(201).json({ message: "success", order });
+
+};
+
 
 
 const getUserOrder = async (req, res, next) => {
@@ -121,4 +135,3 @@ const deleteOrder = async (req, res, next) => {
 }
 
 module.exports = {getAllOrders,getOrderById,getUserOrder,addOrder,updateOrderStatus,updateOrder,deleteOrder,getPendingOrders};
-
