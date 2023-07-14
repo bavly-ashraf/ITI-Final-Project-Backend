@@ -154,7 +154,7 @@ const login = async (req, res, next) => {
       isLogged: user.isLogged,
     },
     process.env.JWT_SECRET,
-    { expiresIn: "5s" }
+    { expiresIn: "5m" }
   );
   const refreshToken = jwt.sign(
     {
@@ -163,7 +163,8 @@ const login = async (req, res, next) => {
       roles: user.role,
       isLogged: user.isLogged,
     },
-    process.env.JWT_REFRESH_SECRET
+    process.env.JWT_REFRESH_SECRET,
+    { expiresIn: "1d" }
   );
   if (!user) return next(new AppError("Email or Passwrods isnt correct", 403));
   const isMatch = await user.checkPassword(password);
