@@ -10,6 +10,7 @@ const {
 const bcrypt = require("bcrypt");
 const { passwordSchema } = require("../Helpers/validationSchema");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 
 ////////////////////////////////////get methods//////////////////////////////////
 
@@ -137,7 +138,6 @@ const signUp = async (req, res, next) => {
 
 //////////////////////Login////////////////////
 //http://localhost:3000/users/login
-const crypto = require("crypto");
 
 // Encrypt the refresh token
 const encryptRefreshToken = (refreshToken) => {
@@ -177,7 +177,9 @@ const login = async (req, res, next) => {
     if (!user) return next(new AppError("Email or Password is incorrect", 403));
 
     if (!user.verification.verified)
-      return next(new AppError("Please verify your account", 403));
+      return next(
+        new AppError("Please verify your account ,Check your Email", 403)
+      );
 
     const isMatch = await user.checkPassword(password);
     if (!isMatch)
@@ -192,7 +194,7 @@ const login = async (req, res, next) => {
         isLogged: user.isLogged,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "5s" }
+      { expiresIn: "5m" }
     );
     const refreshToken = jwt.sign(
       {
@@ -212,7 +214,7 @@ const login = async (req, res, next) => {
         isLogged: user.isLogged,
       },
       process.env.JWT_SECURE_SECRET,
-      { expiresIn: "5s" }
+      { expiresIn: "1d" }
     );
     console.log("test", securedToken);
     const encryptedRefreshToken = encryptRefreshToken(securedToken);
@@ -231,67 +233,15 @@ const login = async (req, res, next) => {
     next(error);
   }
 };
-const getUserDataFromToken = async (decodedToken) => {
-  const userId = decodedToken.id;
-  const user = await User.findById(userId);
-  return user;
-};
-
-// const UserData = async (req, res, next) => {
-//   const { refreshToken: frontEndRefreshToken } = req.body;
-
-//   try {
-//     // Verify the refresh token from the front-end
-//     const decodedRefreshToken = jwt.verify(
-//       frontEndRefreshToken,
-//       process.env.JWT_REFRESH_SECRET
-//     );
-
-//     const userId = decodedRefreshToken.id;
-
-//     // Find the user based on the decoded user ID
-//     const user = await User.findById(userId);
-//     if (!user) {
-//       return res.status(401).json({ error: "Invalid refresh token" });
-//     }
-
-//     const encryptedRefreshToken = user.refresh_token;
-//     const decryptedRefreshToken = decryptRefreshToken(encryptedRefreshToken);
-
-//     const checkbackEndtoken = jwt.verify(
-//       decryptedRefreshToken,
-//       process.env.JWT_SECURE_SECRET
-//     );
-
-//     // Check if the refresh token has expired
-
-//     // Issue a new access token
-//     const newAccessToken = jwt.sign(
-//       {
-//         id: user._id,
-//         user: user.email,
-//         roles: user.role,
-//         isLogged: user.isLogged,
-//       },
-//       process.env.JWT_SECRET,
-//       { expiresIn: "5m" }
-//     );
-
-//     res.status(200).json({ user, token: newAccessToken });
-//   } catch (error) {
-//     if (error.name === "TokenExpiredError") {
-//       return res.status(401).json({ error: "Access token has expired" });
-//     } else if (error.name === "JsonWebTokenError") {
-//       return res.status(401).json({ error: "Invalid refresh token" });
-//     }
-
-//     res.status(500).json({ error: "Failed to decode token" });
-//   }
+// const getUserDataFromToken = async (decodedToken) => {
+//   const userId = decodedToken.id;
+//   const user = await User.findById(userId);
+//   return user;
 // };
+
 const UserData = async (req, res, next) => {
   const { refreshtoken } = req.body;
-  console.log(req.body);
-  console.log(refreshtoken);
+
   try {
     // Verify the refresh token from the front-end
     const decodedRefreshToken = jwt.verify(
@@ -300,11 +250,10 @@ const UserData = async (req, res, next) => {
     );
 
     const userId = decodedRefreshToken.id;
-    console.log(userId);
     // Find the user based on the decoded user ID
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(401).json({ error: "Invalid refresh token" });
+      return next(new AppError("Invalid refresh token", 401));
     }
 
     const encryptedRefreshToken = user.refresh_token;
@@ -333,16 +282,16 @@ const UserData = async (req, res, next) => {
 
       return res.status(200).json({ user, token: newAccessToken });
     } else {
-      return res.status(401).json({ error: "Invalid JWT_SECURE_SECRET token" });
+      return next(new AppError("Invalid JWT_SECURE_SECRET token", 401));
     }
   } catch (error) {
     if (error.name === "TokenExpiredError") {
-      return res.status(401).json({ error: "Access token has expired" });
+      return next(new AppError("Access token has expired", 401));
     } else if (error.name === "JsonWebTokenError") {
-      return res.status(401).json({ error: "Invalid refresh token" });
+      return next(new AppError("Invalid refresh token", 401));
     }
 
-    res.status(500).json({ error: "Failed to decode token" });
+    next(new AppError("Failed to decode token", 500));
   }
 };
 
