@@ -101,6 +101,10 @@ const UsersSchema = new mongoose.Schema({
       },
     },
   ],
+  refresh_token: {
+    type: String,
+    // select: false,
+  },
 });
 UsersSchema.pre("findOne", function (next) {
   this.populate("wishList", "_id name photo_url");

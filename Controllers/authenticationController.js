@@ -137,57 +137,54 @@ const signUp = async (req, res, next) => {
 
 //////////////////////Login////////////////////
 //http://localhost:3000/users/login
+const crypto = require("crypto");
+
+// Encrypt the refresh token
+const encryptRefreshToken = (refreshToken) => {
+  const algorithm = "aes-256-cbc";
+  const key =
+    process.env.REFRESH_TOKEN_ENCRYPTION_KEY || "defaultEncryptionKey";
+  const iv = crypto.randomBytes(16);
+
+  const cipher = crypto.createCipheriv(algorithm, key, iv);
+  let encryptedRefreshToken = cipher.update(refreshToken, "utf8", "hex");
+  encryptedRefreshToken += cipher.final("hex");
+
+  return `${iv.toString("hex")}:${encryptedRefreshToken}`;
+};
+
+// Decrypt the refresh token
+const decryptRefreshToken = (encryptedRefreshToken) => {
+  const algorithm = "aes-256-cbc";
+  const key =
+    process.env.REFRESH_TOKEN_ENCRYPTION_KEY || "defaultEncryptionKey";
+
+  const [ivHex, encryptedToken] = encryptedRefreshToken.split(":");
+  const iv = Buffer.from(ivHex, "hex");
+
+  const decipher = crypto.createDecipheriv(algorithm, key, iv);
+  let decryptedRefreshToken = decipher.update(encryptedToken, "hex", "utf8");
+  decryptedRefreshToken += decipher.final("utf8");
+
+  return decryptedRefreshToken;
+};
 
 const login = async (req, res, next) => {
   const { email, password } = req.body;
-  const user = await User.findOne({ email: email });
-  if (!user) return next(new AppError("Email or Passwrods isnt correct", 403));
-  console.log(user.verification.verified);
-  if (user.verification.verified == false)
-    return next(new AppError("please verify your account", 403));
 
-  const token = jwt.sign(
-    {
-      id: user._id,
-      user: user.email,
-      roles: user.role,
-      isLogged: user.isLogged,
-    },
-    process.env.JWT_SECRET,
-    { expiresIn: "5m" }
-  );
-  const refreshToken = jwt.sign(
-    {
-      id: user._id,
-      user: user.email,
-      roles: user.role,
-      isLogged: user.isLogged,
-    },
-    process.env.JWT_REFRESH_SECRET,
-    { expiresIn: "1d" }
-  );
-  if (!user) return next(new AppError("Email or Passwrods isnt correct", 403));
-  const isMatch = await user.checkPassword(password);
-  if (!isMatch)
-    return next(new AppError("Email or Passwrods isnt correct", 404));
-  user.isLogged = true;
-  await user.save();
-  user.password = undefined;
-  console.log(refreshToken);
-  res.status(201).json({ message: "sucess", user, token, refreshToken });
-};
-
-const getUserDataFromToken = async (decodedToken) => {
-  const userId = decodedToken.id;
-  const user = await User.findById(userId);
-  return user;
-};
-const UserData = async (req, res, next) => {
-  const { token } = req.body;
   try {
-    const decodedToken = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
-    const user = await getUserDataFromToken(decodedToken);
-    const newToken = jwt.sign(
+    const user = await User.findOne({ email });
+    if (!user) return next(new AppError("Email or Password is incorrect", 403));
+
+    if (!user.verification.verified)
+      return next(new AppError("Please verify your account", 403));
+
+    const isMatch = await user.checkPassword(password);
+    if (!isMatch)
+      return next(new AppError("Email or Password is incorrect", 403));
+    user.isLogged = true;
+
+    const token = jwt.sign(
       {
         id: user._id,
         user: user.email,
@@ -195,16 +192,156 @@ const UserData = async (req, res, next) => {
         isLogged: user.isLogged,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "5m" }
+      { expiresIn: "5s" }
     );
-    // console.log(newToken);
-    res.status(200).json({
+    const refreshToken = jwt.sign(
+      {
+        id: user._id,
+        user: user.email,
+        roles: user.role,
+        isLogged: user.isLogged,
+      },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: "1d" }
+    );
+    const securedToken = jwt.sign(
+      {
+        id: user._id,
+        user: user.email,
+        roles: user.role,
+        isLogged: user.isLogged,
+      },
+      process.env.JWT_SECURE_SECRET,
+      { expiresIn: "5s" }
+    );
+    console.log("test", securedToken);
+    const encryptedRefreshToken = encryptRefreshToken(securedToken);
+    user.refresh_token = encryptedRefreshToken;
+    await user.save();
+
+    user.password = undefined;
+
+    res.status(201).json({
+      message: "Success",
       user,
-      token: newToken,
+      token,
+      refreshToken,
     });
-    if (!user)
-      return next(new AppError("Email or Passwrods isnt correct", 403));
   } catch (error) {
+    next(error);
+  }
+};
+const getUserDataFromToken = async (decodedToken) => {
+  const userId = decodedToken.id;
+  const user = await User.findById(userId);
+  return user;
+};
+
+// const UserData = async (req, res, next) => {
+//   const { refreshToken: frontEndRefreshToken } = req.body;
+
+//   try {
+//     // Verify the refresh token from the front-end
+//     const decodedRefreshToken = jwt.verify(
+//       frontEndRefreshToken,
+//       process.env.JWT_REFRESH_SECRET
+//     );
+
+//     const userId = decodedRefreshToken.id;
+
+//     // Find the user based on the decoded user ID
+//     const user = await User.findById(userId);
+//     if (!user) {
+//       return res.status(401).json({ error: "Invalid refresh token" });
+//     }
+
+//     const encryptedRefreshToken = user.refresh_token;
+//     const decryptedRefreshToken = decryptRefreshToken(encryptedRefreshToken);
+
+//     const checkbackEndtoken = jwt.verify(
+//       decryptedRefreshToken,
+//       process.env.JWT_SECURE_SECRET
+//     );
+
+//     // Check if the refresh token has expired
+
+//     // Issue a new access token
+//     const newAccessToken = jwt.sign(
+//       {
+//         id: user._id,
+//         user: user.email,
+//         roles: user.role,
+//         isLogged: user.isLogged,
+//       },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "5m" }
+//     );
+
+//     res.status(200).json({ user, token: newAccessToken });
+//   } catch (error) {
+//     if (error.name === "TokenExpiredError") {
+//       return res.status(401).json({ error: "Access token has expired" });
+//     } else if (error.name === "JsonWebTokenError") {
+//       return res.status(401).json({ error: "Invalid refresh token" });
+//     }
+
+//     res.status(500).json({ error: "Failed to decode token" });
+//   }
+// };
+const UserData = async (req, res, next) => {
+  const { refreshtoken } = req.body;
+  console.log(req.body);
+  console.log(refreshtoken);
+  try {
+    // Verify the refresh token from the front-end
+    const decodedRefreshToken = jwt.verify(
+      refreshtoken,
+      process.env.JWT_REFRESH_SECRET
+    );
+
+    const userId = decodedRefreshToken.id;
+    console.log(userId);
+    // Find the user based on the decoded user ID
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(401).json({ error: "Invalid refresh token" });
+    }
+
+    const encryptedRefreshToken = user.refresh_token;
+    const decryptedRefreshToken = decryptRefreshToken(encryptedRefreshToken);
+    console.log("test22", decryptedRefreshToken);
+    // Verify the decrypted refresh token with the JWT_SECURE_SECRET
+    const secureTokenVerificationResult = jwt.verify(
+      decryptedRefreshToken,
+      process.env.JWT_SECURE_SECRET
+      // { ignoreExpiration: true }
+    );
+    console.log("helloanfwnfa");
+    // Check if the verification succeeded
+    if (secureTokenVerificationResult) {
+      // Issue a new access token
+      const newAccessToken = jwt.sign(
+        {
+          id: user._id,
+          user: user.email,
+          roles: user.role,
+          isLogged: user.isLogged,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "5m" }
+      );
+
+      return res.status(200).json({ user, token: newAccessToken });
+    } else {
+      return res.status(401).json({ error: "Invalid JWT_SECURE_SECRET token" });
+    }
+  } catch (error) {
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({ error: "Access token has expired" });
+    } else if (error.name === "JsonWebTokenError") {
+      return res.status(401).json({ error: "Invalid refresh token" });
+    }
+
     res.status(500).json({ error: "Failed to decode token" });
   }
 };
