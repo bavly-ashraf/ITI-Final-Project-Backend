@@ -153,7 +153,17 @@ const login = async (req, res, next) => {
       roles: user.role,
       isLogged: user.isLogged,
     },
-    process.env.JWT_SECRET
+    process.env.JWT_SECRET,
+    { expiresIn: "5s" }
+  );
+  const refreshToken = jwt.sign(
+    {
+      id: user._id,
+      user: user.email,
+      roles: user.role,
+      isLogged: user.isLogged,
+    },
+    process.env.JWT_REFRESH_SECRET
   );
   if (!user) return next(new AppError("Email or Passwrods isnt correct", 403));
   const isMatch = await user.checkPassword(password);
@@ -162,7 +172,8 @@ const login = async (req, res, next) => {
   user.isLogged = true;
   await user.save();
   user.password = undefined;
-  res.status(201).json({ message: "sucess", user, token });
+  console.log(refreshToken);
+  res.status(201).json({ message: "sucess", user, token, refreshToken });
 };
 
 const getUserDataFromToken = async (decodedToken) => {
@@ -173,11 +184,22 @@ const getUserDataFromToken = async (decodedToken) => {
 const UserData = async (req, res, next) => {
   const { token } = req.body;
   try {
-    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    const decodedToken = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
     const user = await getUserDataFromToken(decodedToken);
+    const newToken = jwt.sign(
+      {
+        id: user._id,
+        user: user.email,
+        roles: user.role,
+        isLogged: user.isLogged,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "5m" }
+    );
+    // console.log(newToken);
     res.status(200).json({
       user,
-      token,
+      token: newToken,
     });
     if (!user)
       return next(new AppError("Email or Passwrods isnt correct", 403));
